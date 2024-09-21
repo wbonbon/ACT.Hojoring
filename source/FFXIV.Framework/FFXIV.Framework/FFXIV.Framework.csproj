@@ -47,7 +47,6 @@
   <ItemGroup>
     <Reference Include="Advanced Combat Tracker">
       <HintPath>..\..\ThirdParty\Advanced Combat Tracker.exe</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="FFXIV_ACT_Plugin">
       <HintPath>..\..\ThirdParty\FFXIV_ACT_Plugin.dll</HintPath>

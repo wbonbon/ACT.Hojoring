@@ -21,6 +21,7 @@ using NLog.Targets;
 using Prism.Commands;
 using Prism.Mvvm;
 
+
 namespace FFXIV.Framework.WPF.ViewModels
 {
     public class HelpViewModel :
@@ -55,12 +56,21 @@ namespace FFXIV.Framework.WPF.ViewModels
             }
         }
 
+        bool bOnece = false;
         private void View_Loaded(
             object sender,
             RoutedEventArgs e)
         {
             this.timer.Start();
             this.UpdateVersionInfo();
+
+            if (!bOnece)
+            {
+                
+                view.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                view.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                bOnece = true;
+            }
         }
 
         private void View_Unloaded(

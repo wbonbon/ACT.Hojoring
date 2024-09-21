@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace FFXIV.Framework.Common
 {
     public static class CommonHelper
     {
+        public static System.Windows.Media.Color ToMediaColor(this System.Drawing.Color dColor) => System.Windows.Media.Color.FromArgb(dColor.A, dColor.R, dColor.G, dColor.B);
+        public static SolidColorBrush ToSolidColorBrush(this System.Windows.Media.Color mColor) => new SolidColorBrush(mColor);
+
+
         private const double DefaultMin = 0.05;
         private const double DefaultMax = 1.00;
 
