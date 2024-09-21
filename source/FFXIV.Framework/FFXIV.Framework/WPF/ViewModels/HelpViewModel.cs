@@ -78,21 +78,6 @@ namespace FFXIV.Framework.WPF.ViewModels
             }
         }
 
-        private void ApplyColorSettings<T>() where T : DependencyObject
-        {
-            var elements = FindChildren<T>(this.View);
-            foreach (var element in elements)
-            {
-                element.Foreground = GetBrush(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting);
-                element.Background = GetBrush(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting);
-            }
-        }
-
-        private SolidColorBrush GetBrush(System.Drawing.Color colorSetting)
-        {
-            return FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(colorSetting));
-        }
-
         bool bOnece = false;
 
         private void View_Loaded(
@@ -106,12 +91,6 @@ namespace FFXIV.Framework.WPF.ViewModels
             {
                 if (!bOnece)
                 {
-                    ApplyColorSettings<TextBox>();
-                    ApplyColorSettings<Button>();
-                    ApplyColorSettings<Label>();
-                    ApplyColorSettings<TextBlock>();
-                    ApplyColorSettings<TabItem>();
-
                     var textboxs = FindChildren<TextBox>(this.View);
                     foreach (var c in textboxs)
                     {
