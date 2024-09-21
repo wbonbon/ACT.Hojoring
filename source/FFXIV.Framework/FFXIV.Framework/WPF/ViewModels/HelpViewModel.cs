@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Threading;
 using Advanced_Combat_Tracker;
@@ -70,40 +69,7 @@ namespace FFXIV.Framework.WPF.ViewModels
             {
                 if (!bOnece)
                 {
-                    var textboxs = CommonHelper.FindChildren<TextBox>(this.View);
-                    foreach (var c in textboxs)
-                    {
-                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
-                    }
-
-                    var buttons = CommonHelper.FindChildren<Button>(this.View);
-                    foreach (var c in buttons)
-                    {
-                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
-                    }
-
-                    var labels = CommonHelper.FindChildren<Label>(this.View);
-                    foreach (var c in labels)
-                    {
-                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
-                    }
-
-                    var textblocks = CommonHelper.FindChildren<TextBlock>(this.View);
-                    foreach (var c in textblocks)
-                    {
-                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
-                    }
-
-                    var tabitems = CommonHelper.FindChildren<TabItem>(this.View);
-                    foreach (var c in tabitems)
-                    {
-                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
-                    }
+                    CommonHelper.Change_common_ctl_color(this.View);
 
                     view.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
                     view.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));

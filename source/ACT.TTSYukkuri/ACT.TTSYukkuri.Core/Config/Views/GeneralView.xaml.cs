@@ -27,6 +27,8 @@ namespace ACT.TTSYukkuri.Config.Views
         public GeneralView()
         {
             this.InitializeComponent();
+
+            view = this;
             this.DataContext = new GeneralViewModel();
 
             this.SetLocale(Settings.Default.UILocale);
@@ -35,10 +37,13 @@ namespace ACT.TTSYukkuri.Config.Views
             this.Loaded += this.OnLoaded;
         }
 
+        private GeneralView view;
+
         public GeneralViewModel ViewModel => this.DataContext as GeneralViewModel;
 
         public void SetLocale(Locales locale) => this.ReloadLocaleDictionary(locale);
 
+        bool bOnece = false;
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
             var ttsType = string.Empty;
@@ -55,6 +60,18 @@ namespace ACT.TTSYukkuri.Config.Views
             ttsType = (string)(this.TTSTypesComboBox.SelectedValue);
 #endif
             this.LoadTTSConfigPage(ttsType);
+
+            if (ActGlobals.oFormActMain.ActColorSettings.InvertColors)
+            {
+                if (!bOnece)
+                {
+                    CommonHelper.Change_common_ctl_color(this.view);
+
+                    view.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                    view.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                    bOnece = true;
+                }
+            }
         }
 
         private void TTSTypeOnSelectionChanged(
