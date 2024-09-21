@@ -228,7 +228,6 @@
     <Compile Include="WPF\Converters\MultipleConverter.cs" />
     <Compile Include="WPF\Converters\SolidColorBrushToColorConverter.cs" />
     <Compile Include="WPF\Converters\ThicknessToMarginConverter.cs" />
-    <Compile Include="WPF\DependencyObjectExtension.cs" />
     <Compile Include="WPF\DesignTimeResourcesDictionarycs.cs" />
     <Compile Include="WPF\ViewModels\HelpViewModel.cs" />
     <Compile Include="WPF\Views\HelpView.xaml.cs">
