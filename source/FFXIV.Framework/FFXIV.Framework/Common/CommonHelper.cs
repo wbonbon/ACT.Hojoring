@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Media;
 
 namespace FFXIV.Framework.Common
@@ -10,6 +11,21 @@ namespace FFXIV.Framework.Common
         public static System.Windows.Media.Color ToMediaColor(this System.Drawing.Color dColor) => System.Windows.Media.Color.FromArgb(dColor.A, dColor.R, dColor.G, dColor.B);
         public static SolidColorBrush ToSolidColorBrush(this System.Windows.Media.Color mColor) => new SolidColorBrush(mColor);
 
+        public static IEnumerable<T> FindChildren<T>(DependencyObject depObj) where T : DependencyObject
+        {
+            if (depObj == null) yield break;
+
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+            {
+                var child = VisualTreeHelper.GetChild(depObj, i);
+                if (child is T tChild) yield return tChild;
+
+                foreach (var childOfChild in FindChildren<T>(child))
+                {
+                    yield return childOfChild;
+                }
+            }
+        }
 
         private const double DefaultMin = 0.05;
         private const double DefaultMax = 1.00;

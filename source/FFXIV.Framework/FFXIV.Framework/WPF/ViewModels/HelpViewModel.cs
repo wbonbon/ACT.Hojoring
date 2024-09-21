@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -10,7 +9,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Media;
 using System.Windows.Threading;
 using Advanced_Combat_Tracker;
 using FFXIV.Framework.Bridge;
@@ -21,11 +19,8 @@ using FFXIV.Framework.XIVHelper;
 using Microsoft.VisualBasic.FileIO;
 using NLog;
 using NLog.Targets;
-using NPOI.SS.Formula.Functions;
 using Prism.Commands;
 using Prism.Mvvm;
-using Windows.UI.Composition;
-using static Advanced_Combat_Tracker.FormActMain;
 
 
 namespace FFXIV.Framework.WPF.ViewModels
@@ -62,22 +57,6 @@ namespace FFXIV.Framework.WPF.ViewModels
             }
         }
 
-        public static IEnumerable<T> FindChildren<T>(DependencyObject depObj) where T : DependencyObject
-        {
-            if (depObj == null) yield break;
-
-            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
-            {
-                var child = VisualTreeHelper.GetChild(depObj, i);
-                if (child is T tChild) yield return tChild;
-
-                foreach (var childOfChild in FindChildren<T>(child))
-                {
-                    yield return childOfChild;
-                }
-            }
-        }
-
         bool bOnece = false;
 
         private void View_Loaded(
@@ -87,47 +66,47 @@ namespace FFXIV.Framework.WPF.ViewModels
             this.timer.Start();
             this.UpdateVersionInfo();
 
-            if (Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.InvertColors)
+            if (ActGlobals.oFormActMain.ActColorSettings.InvertColors)
             {
                 if (!bOnece)
                 {
-                    var textboxs = FindChildren<TextBox>(this.View);
+                    var textboxs = CommonHelper.FindChildren<TextBox>(this.View);
                     foreach (var c in textboxs)
                     {
-                        c.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     }
 
-                    var buttons = FindChildren<Button>(this.View);
-                    foreach (var c in textboxs)
+                    var buttons = CommonHelper.FindChildren<Button>(this.View);
+                    foreach (var c in buttons)
                     {
-                        c.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     }
 
-                    var labels = FindChildren<Label>(this.View);
+                    var labels = CommonHelper.FindChildren<Label>(this.View);
                     foreach (var c in labels)
                     {
-                        c.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     }
 
-                    var textblocks = FindChildren<TextBlock>(this.View);
+                    var textblocks = CommonHelper.FindChildren<TextBlock>(this.View);
                     foreach (var c in textblocks)
                     {
-                        c.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     }
 
-                    var tabitems = FindChildren<TabItem>(this.View);
+                    var tabitems = CommonHelper.FindChildren<TabItem>(this.View);
                     foreach (var c in tabitems)
                     {
-                        c.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     }
 
-                    view.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                    view.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                    view.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                    view.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     bOnece = true;
                 }
             }

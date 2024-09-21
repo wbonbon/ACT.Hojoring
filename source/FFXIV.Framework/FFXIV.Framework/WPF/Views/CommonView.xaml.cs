@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
+using Advanced_Combat_Tracker;
 using FFXIV.Framework.Common;
 using FFXIV.Framework.Globalization;
 
@@ -59,26 +56,21 @@ namespace FFXIV.Framework.WPF.Views
             object sender,
             RoutedEventArgs e)
         {
-            if (!bOnece)
+            if (ActGlobals.oFormActMain.ActColorSettings.InvertColors)
             {
-                Func<DependencyObject, IEnumerable<TabItem>> f = null;
-                f = d =>
+                if (!bOnece)
                 {
-                    if (d is TabItem) { return new[] { (TabItem)d }; }
-                    return Enumerable.Range(0, VisualTreeHelper.GetChildrenCount(d)).Select(i => f(VisualTreeHelper.GetChild(d, i))).SelectMany(a => a);
-                };
+                    var tabitems = CommonHelper.FindChildren<TabItem>(this.View);
+                    foreach (var c in tabitems)
+                    {
+                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                    }
 
-                var list = f(this.view);
-
-                foreach (TabItem t in list)
-                {
-                    t.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                    t.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                    view.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
+                    view.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                    bOnece = true;
                 }
-
-                view.Foreground = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                view.Background = FFXIV.Framework.Common.CommonHelper.ToSolidColorBrush(FFXIV.Framework.Common.CommonHelper.ToMediaColor(Advanced_Combat_Tracker.ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
-                bOnece = true;
             }
         }
 
