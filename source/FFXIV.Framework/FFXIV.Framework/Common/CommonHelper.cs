@@ -1,4 +1,5 @@
 using Advanced_Combat_Tracker;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -34,64 +35,63 @@ namespace FFXIV.Framework.Common
             var textboxs = CommonHelper.FindChildren<TextBox>(View);
             foreach (var c in textboxs)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
 
             var buttons = CommonHelper.FindChildren<Button>(View);
             foreach (var c in buttons)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
 
             var labels = CommonHelper.FindChildren<Label>(View);
             foreach (var c in labels)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
 
             var textblocks = CommonHelper.FindChildren<TextBlock>(View);
             foreach (var c in textblocks)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
             var tabitems = CommonHelper.FindChildren<TabItem>(View);
             foreach (var c in tabitems)
             {
-                
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
 
             var comboboxs = CommonHelper.FindChildren<ComboBox>(View);
             foreach (var c in comboboxs)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
 
             var togglebuttons = CommonHelper.FindChildren<ToggleButton>(View);
             foreach (var c in togglebuttons)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
 
             var listboxs = CommonHelper.FindChildren<ListBox>(View);
             foreach (var c in listboxs)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
 
             var listviews = CommonHelper.FindChildren<ListView>(View);
             foreach (var c in listviews)
             {
-                c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
             }
         }
 

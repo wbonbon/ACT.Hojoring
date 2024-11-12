@@ -63,12 +63,12 @@ namespace FFXIV.Framework.WPF.Views
                     var tabitems = CommonHelper.FindChildren<TabItem>(this.View);
                     foreach (var c in tabitems)
                     {
-                        c.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                        c.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
+                        c.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                        c.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
                     }
+                    view.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                    view.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
 
-                    view.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                    view.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     bOnece = true;
                 }
             }

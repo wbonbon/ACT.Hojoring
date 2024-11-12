@@ -70,9 +70,9 @@ namespace FFXIV.Framework.WPF.ViewModels
                 if (!bOnece)
                 {
                     CommonHelper.Change_common_ctl_color(this.View);
+                    view.Foreground = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting.ToMediaColor().ToSolidColorBrush();
+                    view.Background = ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting.ToMediaColor().ToSolidColorBrush();
 
-                    view.Foreground = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.ForeColorSetting));
-                    view.Background = CommonHelper.ToSolidColorBrush(CommonHelper.ToMediaColor(ActGlobals.oFormActMain.ActColorSettings.MainWindowColors.BackColorSetting));
                     bOnece = true;
                 }
             }
