@@ -55,6 +55,32 @@ builder.AddMetadataReferences(
 );
 ```
 
+### 4. RazorEngine 一時フォルダのクリーンアップ（復元と改良）
+**課題:**
+`RazorEngine` が作成していた一時フォルダが、移行後に `%temp%` に残り続ける問題が発生。また、単純に復活させると起動のたびに無駄な削除処理が走る。
+さらに、`Settings.Load` 前に保存を行うと設定が消失する問題や、非同期処理の待機不備による警告も発生した。
+
+**解決策:**
+`PluginCore.cs` にて、以下の改良を加えたクリーンアップロジックを実装しました。
+1.  `Settings` に `LastRazorEngineCleanupDateTime` プロパティを追加し、実行済みかどうかを管理（初回のみ実行）。
+2.  `Settings.Default.Load()` の**後**に処理を配置し、設定消失を防止。
+3.  `await Task.Run(...)` を使用し、非同期処理の完了を確実に待機。
+
+```csharp
+// PluginCore.cs (InitPluginCore)
+Settings.Default.Load();
+// ...
+if (Settings.Default.LastRazorEngineCleanupDateTime == DateTime.MinValue)
+{
+    await Task.Run(() => 
+    {
+        // ... Clean up logic ...
+        Settings.Default.LastRazorEngineCleanupDateTime = DateTime.Now;
+        Settings.Default.Save();
+    });
+}
+```
+
 ## 検証結果
 - **ビルド**: `make.ps1` および Visual Studio でのリビルドが正常に完了することを確認。
 - **動作確認**:
