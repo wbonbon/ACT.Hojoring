@@ -41,38 +41,6 @@ namespace ACT.SpecialSpellTimer
         {
 
 
-            // 旧RazorEngineの一時フォルダを削除する
-            // 移行後、一度だけ実行する
-            if (Settings.Default.LastRazorEngineCleanupDateTime == DateTime.MinValue)
-            {
-                Task.Run(() =>
-                {
-                    try
-                    {
-                        var tempDir = Path.GetTempPath();
-                        var directories = Directory.GetDirectories(tempDir, "RazorEngine_*", SearchOption.TopDirectoryOnly);
-
-                        foreach (var dir in directories)
-                        {
-                            try
-                            {
-                                Directory.Delete(dir, true);
-                            }
-                            catch
-                            {
-                                // ignore
-                            }
-                        }
-
-                        Settings.Default.LastRazorEngineCleanupDateTime = DateTime.Now;
-                        Settings.Default.Save();
-                    }
-                    catch (Exception ex)
-                    {
-                        System.Diagnostics.Debug.WriteLine(ex);
-                    }
-                });
-            }
 
             instance = new PluginCore();
             instance.PluginRoot = plugin;
@@ -250,6 +218,39 @@ namespace ACT.SpecialSpellTimer
                 Settings.Default.Load();
                 Settings.Default.ApplyRenderMode();
                 Settings.Default.StartAutoSave();
+
+                // 旧RazorEngineの一時フォルダを削除する
+                // 移行後、一度だけ実行する
+                if (Settings.Default.LastRazorEngineCleanupDateTime == DateTime.MinValue)
+                {
+                    await Task.Run(() =>
+                    {
+                        try
+                        {
+                            var tempDir = Path.GetTempPath();
+                            var directories = Directory.GetDirectories(tempDir, "RazorEngine_*", SearchOption.TopDirectoryOnly);
+
+                            foreach (var dir in directories)
+                            {
+                                try
+                                {
+                                    Directory.Delete(dir, true);
+                                }
+                                catch
+                                {
+                                    // ignore
+                                }
+                            }
+
+                            Settings.Default.LastRazorEngineCleanupDateTime = DateTime.Now;
+                            Settings.Default.Save();
+                        }
+                        catch (Exception ex)
+                        {
+                            System.Diagnostics.Debug.WriteLine(ex);
+                        }
+                    });
+                }
 
                 // 最小化する？
                 if (Settings.Default.IsMinimizeOnStart)
