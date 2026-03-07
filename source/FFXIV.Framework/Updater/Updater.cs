@@ -373,7 +373,15 @@ namespace FFXIV.Framework.Updater
                 var assembly = Assembly.GetAssembly(typeof(ACT.Hojoring.Common.Hojoring)) ?? Assembly.GetExecutingAssembly();
                 var rawAssemblyVersion = target.CurrentVersion ?? assembly.GetName().Version;
                 var assemblyVersionStr = rawAssemblyVersion.ToString();
-                var assemblyMatch = Regex.Match(assemblyVersionStr, @"^\d+\.\d+\.\d+");
+                
+                // If it's a 4-part version from the build script (e.g. 11.0.0.1), remove the 3rd part to restore the 3-part format (11.0.1)
+                var versionParts = assemblyVersionStr.Split('.');
+                if (versionParts.Length == 4 && versionParts[2] == "0")
+                {
+                    assemblyVersionStr = $"{versionParts[0]}.{versionParts[1]}.{versionParts[3]}";
+                }
+                
+                var assemblyMatch = Regex.Match(assemblyVersionStr, @"^(\d+\.){1,3}\d+");
                 var normalizedVersionStr = assemblyMatch.Success ? assemblyMatch.Value : assemblyVersionStr;
                 Version.TryParse(normalizedVersionStr, out Version currentVersion);
 
