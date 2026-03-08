@@ -278,40 +278,7 @@ namespace FFXIV.Framework.Updater
                 }
 
                 var pipeline = new MarkdownPipelineBuilder().UseAdvancedExtensions().UseSoftlineBreakAsHardlineBreak().Build();
-                string htmlContent;
-                try
-                {
-                    var mdType = typeof(Markdown);
-                    var methods = mdType.GetMethods(BindingFlags.Public | BindingFlags.Static)
-                                        .Where(m => m.Name == "ToHtml");
-
-                    var method3 = methods.FirstOrDefault(m => 
-                        m.GetParameters().Length == 3 && 
-                        m.GetParameters()[0].ParameterType == typeof(string) && 
-                        m.GetParameters()[1].ParameterType == typeof(MarkdownPipeline));
-
-                    var method2 = methods.FirstOrDefault(m => 
-                        m.GetParameters().Length == 2 && 
-                        m.GetParameters()[0].ParameterType == typeof(string) && 
-                        m.GetParameters()[1].ParameterType == typeof(MarkdownPipeline));
-
-                    if (method3 != null)
-                    {
-                        htmlContent = (string)method3.Invoke(null, new object[] { rawMarkdown, pipeline, null });
-                    }
-                    else if (method2 != null)
-                    {
-                        htmlContent = (string)method2.Invoke(null, new object[] { rawMarkdown, pipeline });
-                    }
-                    else
-                    {
-                        htmlContent = @"<p>Markdig.ToHtml method not found.</p><pre>" + rawMarkdown.Replace("<", "&lt;").Replace(">", "&gt;") + "</pre>";
-                    }
-                }
-                catch (Exception ex)
-                {
-                    htmlContent = @"<p>Markdown parse error: " + ex.Message + "</p><pre>" + rawMarkdown.Replace("<", "&lt;").Replace(">", "&gt;") + "</pre>";
-                }
+                var htmlContent = Markdown.ToHtml(rawMarkdown, pipeline);
                 var fullHtml = $@"<html><head><meta http-equiv='X-UA-Compatible' content='IE=edge' /><style>body {{ font-family: 'Segoe UI', 'Meiryo', sans-serif; font-size: 10pt; line-height: 1.6; padding: 15px; color: #333; }} h1.release-tag {{ color: #0056b3; border-bottom: 2px solid #0056b3; padding-bottom: 10px; margin-top: 0; font-size: 18pt; }} h2, h3 {{ border-bottom: 1px solid #ddd; padding-bottom: 5px; color: #444; margin-top: 20px; }} code {{ background-color: #f0f0f0; padding: 2px 4px; border-radius: 3px; font-family: 'Consolas', monospace; }} pre {{ background-color: #f8f8f8; padding: 10px; border-radius: 5px; overflow-x: auto; border: 1px solid #eee; }} ul, ol {{ padding-left: 25px; }} li {{ margin-bottom: 4px; }} a {{ color: #0066cc; text-decoration: none; font-weight: bold; }} a:hover {{ text-decoration: underline; }}</style></head><body><h1 class='release-tag'>{tagName}</h1>{htmlContent}</body></html>";
                 this.SafeInvoke(() =>
                 {
