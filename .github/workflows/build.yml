@@ -28,13 +28,18 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Checkout Secrets
-      uses: actions/checkout@v4
-      with:
-        repository: wbonbon/ACT.Hojoring.Secrets
-        ssh-key: ${{ secrets.SECRETS_DEPLOY_KEY }}
-        path: dep-secrets
       env:
-        GIT_SSH_COMMAND: "ssh -o StrictHostKeyChecking=no -o BatchMode=yes"
+        DEPLOY_KEY: ${{ secrets.SECRETS_DEPLOY_KEY }}
+      run: |
+        $keyDir = "$env:RUNNER_TEMP\.ssh"
+        if (-not (Test-Path $keyDir)) { New-Item -ItemType Directory $keyDir | Out-Null }
+        $keyPath = "$keyDir\id_ed25519"
+        $privateKey = ($env:DEPLOY_KEY).Trim() + "`n"
+        [IO.File]::WriteAllText($keyPath, $privateKey)
+        $env:GIT_SSH_COMMAND = "ssh -i `"$keyPath`" -o StrictHostKeyChecking=no -o BatchMode=yes"
+        git clone --depth 1 git@github.com:wbonbon/ACT.Hojoring.Secrets.git dep-secrets
+        Remove-Item $keyPath -Force
+      shell: pwsh
 
     - name: Copy Dependencies
       run: |
