@@ -17,6 +17,7 @@ jobs:
     env:
       Solution_Path: source/ACT.Hojoring.sln
       Test_Project_Path: source/ACT.Hojoring.Tests/ACT.Hojoring.Tests.csproj
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
     steps:
     - name: Checkout
