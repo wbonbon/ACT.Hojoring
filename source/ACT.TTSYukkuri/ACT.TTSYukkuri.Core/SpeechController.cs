@@ -6,6 +6,7 @@ using ACT.TTSYukkuri.OpenJTalk;
 using ACT.TTSYukkuri.Polly;
 using ACT.TTSYukkuri.SAPI5;
 using ACT.TTSYukkuri.Sasara;
+using ACT.TTSYukkuri.Voicevox;
 using ACT.TTSYukkuri.Voiceroid;
 using ACT.TTSYukkuri.Yukkuri;
 using FFXIV.Framework.Bridge;
@@ -90,6 +91,10 @@ namespace ACT.TTSYukkuri
 
                             case TTSType.Polly:
                                 SpeechController.instance = new PollySpeechController();
+                                break;
+
+                            case TTSType.Voicevox:
+                                SpeechController.instance = new VoicevoxSpeechController();
                                 break;
 
                             default:

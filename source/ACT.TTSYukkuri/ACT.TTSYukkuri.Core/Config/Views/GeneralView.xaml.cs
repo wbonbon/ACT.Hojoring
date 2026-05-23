@@ -179,6 +179,10 @@ namespace ACT.TTSYukkuri.Config.Views
                 case TTSType.GoogleCloudTextToSpeech:
                     content = new GoogleCloudTextToSpeechConfigTabView();
                     break;
+
+                case TTSType.Voicevox:
+                    content = new VoicevoxConfigView();
+                    break;
             }
 
             this.ContentGrid.Children.Clear();
