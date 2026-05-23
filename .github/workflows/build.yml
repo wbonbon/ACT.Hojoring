@@ -34,8 +34,10 @@ jobs:
         $keyDir = "$env:RUNNER_TEMP\.ssh"
         if (-not (Test-Path $keyDir)) { New-Item -ItemType Directory $keyDir | Out-Null }
         $keyPath = "$keyDir\id_ed25519"
+        # OpenSSHがBOM付きUTF-8を不正な形式と見なすのを防ぐため、BOMなしUTF-8で保存
+        $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
         $privateKey = ($env:DEPLOY_KEY).Trim() + "`n"
-        [IO.File]::WriteAllText($keyPath, $privateKey)
+        [IO.File]::WriteAllText($keyPath, $privateKey, $utf8NoBom)
         $env:GIT_SSH_COMMAND = "ssh -i `"$keyPath`" -o StrictHostKeyChecking=no -o BatchMode=yes"
         git clone --depth 1 git@github.com:wbonbon/ACT.Hojoring.Secrets.git dep-secrets
         Remove-Item $keyPath -Force
