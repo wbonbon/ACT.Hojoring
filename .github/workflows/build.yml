@@ -33,6 +33,8 @@ jobs:
         repository: wbonbon/ACT.Hojoring.Secrets
         ssh-key: ${{ secrets.SECRETS_DEPLOY_KEY }}
         path: dep-secrets
+      env:
+        GIT_SSH_COMMAND: "ssh -o StrictHostKeyChecking=no -o BatchMode=yes"
 
     - name: Copy Dependencies
       run: |
