@@ -56,6 +56,11 @@ namespace ACT.TTSYukkuri
         public const string GoogleCloudTextToSpeech = "Google Cloud Text-to-Speech";
 
         /// <summary>
+        /// VOICEVOX
+        /// </summary>
+        public const string Voicevox = "Voicevox";
+
+        /// <summary>
         /// コンボボックスコレクション
         /// </summary>
         public static ComboBoxItem[] ToComboBox = new ComboBoxItem[]
@@ -70,6 +75,7 @@ namespace ACT.TTSYukkuri
             new ComboBoxItem("HOYA VoiceText Web API", TTSType.HOYA),
             new ComboBoxItem("Amazon Polly", TTSType.Polly),
             new ComboBoxItem("Google Cloud Text-to-Speech", TTSType.GoogleCloudTextToSpeech),
+            new ComboBoxItem("VOICEVOX (Voicebox)", TTSType.Voicevox),
         };
     }
 

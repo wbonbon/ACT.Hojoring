@@ -109,6 +109,10 @@ namespace ACT.TTSYukkuri.Config
         private GoogleCloudTextToSpeechConfig googleCloudTextToSpeechSettingsExt1 = new GoogleCloudTextToSpeechConfig();
         private GoogleCloudTextToSpeechConfig googleCloudTextToSpeechSettingsExt2 = new GoogleCloudTextToSpeechConfig();
         private GoogleCloudTextToSpeechConfig googleCloudTextToSpeechSettingsExt3 = new GoogleCloudTextToSpeechConfig();
+        private VoicevoxConfig voicevoxSettings = new VoicevoxConfig();
+        private VoicevoxConfig voicevoxSettingsExt1 = new VoicevoxConfig();
+        private VoicevoxConfig voicevoxSettingsExt2 = new VoicevoxConfig();
+        private VoicevoxConfig voicevoxSettingsExt3 = new VoicevoxConfig();
         private StatusAlertConfig statusAlertSettings = new StatusAlertConfig();
         private DiscordSettings discordSettings = new DiscordSettings();
 
@@ -564,6 +568,33 @@ namespace ACT.TTSYukkuri.Config
         {
             get => this.googleCloudTextToSpeechSettingsExt3;
             set => this.SetProperty(ref this.googleCloudTextToSpeechSettingsExt3, value);
+        }
+
+        /// <summary>
+        /// VOICEVOX縺ｮ險ｭ螳啻r
+        /// </summary>
+        public VoicevoxConfig VoicevoxSettings
+        {
+            get => this.voicevoxSettings;
+            set => this.SetProperty(ref this.voicevoxSettings, value);
+        }
+
+        public VoicevoxConfig VoicevoxSettingsExt1
+        {
+            get => this.voicevoxSettingsExt1;
+            set => this.SetProperty(ref this.voicevoxSettingsExt1, value);
+        }
+
+        public VoicevoxConfig VoicevoxSettingsExt2
+        {
+            get => this.voicevoxSettingsExt2;
+            set => this.SetProperty(ref this.voicevoxSettingsExt2, value);
+        }
+
+        public VoicevoxConfig VoicevoxSettingsExt3
+        {
+            get => this.voicevoxSettingsExt3;
+            set => this.SetProperty(ref this.voicevoxSettingsExt3, value);
         }
 
         /// <summary>

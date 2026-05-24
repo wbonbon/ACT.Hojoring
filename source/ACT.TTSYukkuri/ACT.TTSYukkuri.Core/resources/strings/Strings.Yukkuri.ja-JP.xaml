@@ -119,6 +119,15 @@ CeVIO 7 と CeVIO AI との切替時には一度 AquesTalk に切替えて再起
   <system:String x:Key="Polly_AccessKey">アクセスキー</system:String>
   <system:String x:Key="Polly_SecretKey">シークレットキー</system:String>
 
+  <system:String x:Key="Voicevox_ApiUrl">API URL (例: http://localhost:50021/)</system:String>
+  <system:String x:Key="Voicevox_Reload">再取得</system:String>
+  <system:String x:Key="Voicevox_Speaker">話者 (キャラクター &amp; スタイル)</system:String>
+  <system:String x:Key="Voicevox_Volume">音量比</system:String>
+  <system:String x:Key="Voicevox_Speed">話速比</system:String>
+  <system:String x:Key="Voicevox_Pitch">音高比</system:String>
+  <system:String x:Key="Voicevox_Intonation">抑揚比</system:String>
+  <system:String x:Key="Voicevox_Description">ローカルまたはリモートで動作する VOICEVOX 音声合成エンジンと連携します。</system:String>
+
   <system:String x:Key="SA_Enabled">監視する</system:String>
   <system:String x:Key="SA_Threshold">通知する閾値</system:String>
   <system:String x:Key="SA_TTSFormat">通知するテキスト</system:String>

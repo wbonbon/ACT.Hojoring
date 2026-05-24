@@ -119,6 +119,15 @@ Procedure. Switch from CeVIO 7 to CeVIO AI 1.
   <system:String x:Key="Polly_AccessKey">Access Key</system:String>
   <system:String x:Key="Polly_SecretKey">Secret Key</system:String>
 
+  <system:String x:Key="Voicevox_ApiUrl">API URL (e.g. http://localhost:50021/)</system:String>
+  <system:String x:Key="Voicevox_Reload">Reload</system:String>
+  <system:String x:Key="Voicevox_Speaker">Speaker (Character &amp; Style)</system:String>
+  <system:String x:Key="Voicevox_Volume">Volume Scale</system:String>
+  <system:String x:Key="Voicevox_Speed">Speed Scale</system:String>
+  <system:String x:Key="Voicevox_Pitch">Pitch Scale</system:String>
+  <system:String x:Key="Voicevox_Intonation">Intonation Scale</system:String>
+  <system:String x:Key="Voicevox_Description">Connects to local or remote VOICEVOX speech synthesis engine.</system:String>
+
   <system:String x:Key="SA_Enabled">Alert Enabled</system:String>
   <system:String x:Key="SA_Threshold">Alert Threshold</system:String>
   <system:String x:Key="SA_TTSFormat">Text to Alert</system:String>

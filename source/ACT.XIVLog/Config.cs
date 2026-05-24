@@ -393,6 +393,45 @@ namespace ACT.XIVLog
         [XmlIgnore]
         public bool NotUseObsWS => !this.UseObsWS;
 
+        // --- OBS WebSocket リモート接続設定 ---
+
+        private string obsWebSocketHost = "127.0.0.1";
+
+        [DefaultValue("127.0.0.1")]
+        public string ObsWebSocketHost
+        {
+            get => this.obsWebSocketHost;
+            set => this.SetProperty(ref this.obsWebSocketHost, value);
+        }
+
+        private int obsWebSocketPort = 4455;
+
+        [DefaultValue(4455)]
+        public int ObsWebSocketPort
+        {
+            get => this.obsWebSocketPort;
+            set => this.SetProperty(ref this.obsWebSocketPort, value);
+        }
+
+        private string obsWebSocketPassword = "";
+
+        [DefaultValue("")]
+        public string ObsWebSocketPassword
+        {
+            get => this.obsWebSocketPassword;
+            set => this.SetProperty(ref this.obsWebSocketPassword, value);
+        }
+
+        /// <summary>
+        /// OBS WebSocket接続先がリモートPCかどうかを判定する
+        /// </summary>
+        [XmlIgnore]
+        public bool IsRemoteObs =>
+            this.UseObsRpc &&
+            !string.IsNullOrEmpty(this.ObsWebSocketHost) &&
+            this.ObsWebSocketHost != "127.0.0.1" &&
+            this.ObsWebSocketHost != "localhost";
+
         private string videFilePrefix = "FFXIV";
 
         public string VideFilePrefix
