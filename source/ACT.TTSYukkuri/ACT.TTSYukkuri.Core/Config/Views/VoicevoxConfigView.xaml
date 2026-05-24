@@ -37,7 +37,11 @@
     </ResourceDictionary>
   </UserControl.Resources>
 
-  <StackPanel Orientation="Vertical">
+  <ScrollViewer
+    HorizontalScrollBarVisibility="Disabled"
+    VerticalScrollBarVisibility="Auto">
+
+    <StackPanel Orientation="Vertical">
     <!-- API URL -->
     <Label Content="{DynamicResource Voicevox_ApiUrl}" />
     <StackPanel Orientation="Horizontal">
@@ -72,9 +76,12 @@
         MinWidth="60"
         Margin="5,0,0,0"
         HorizontalContentAlignment="Right"
-        Content="{Binding ElementName=VolumeSlider, Path=Value, Mode=OneWay, StringFormat=F2}" />
+        Content="{Binding ElementName=VolumeSlider, Path=Value, Mode=OneWay}"
+        ContentStringFormat="F2" />
       <Slider
         x:Name="VolumeSlider"
+        IsSnapToTickEnabled="True"
+        TickFrequency="0.01"
         Width="250"
         Margin="5,0,0,0"
         HorizontalAlignment="Left"
@@ -96,9 +103,12 @@
         MinWidth="60"
         Margin="5,0,0,0"
         HorizontalContentAlignment="Right"
-        Content="{Binding ElementName=SpeedSlider, Path=Value, Mode=OneWay, StringFormat=F2}" />
+        Content="{Binding ElementName=SpeedSlider, Path=Value, Mode=OneWay}"
+        ContentStringFormat="F2" />
       <Slider
         x:Name="SpeedSlider"
+        IsSnapToTickEnabled="True"
+        TickFrequency="0.01"
         Width="250"
         Margin="5,0,0,0"
         HorizontalAlignment="Left"
@@ -120,9 +130,12 @@
         MinWidth="60"
         Margin="5,0,0,0"
         HorizontalContentAlignment="Right"
-        Content="{Binding ElementName=PitchSlider, Path=Value, Mode=OneWay, StringFormat=F2}" />
+        Content="{Binding ElementName=PitchSlider, Path=Value, Mode=OneWay}"
+        ContentStringFormat="F2" />
       <Slider
         x:Name="PitchSlider"
+        IsSnapToTickEnabled="True"
+        TickFrequency="0.01"
         Width="250"
         Margin="5,0,0,0"
         HorizontalAlignment="Left"
@@ -130,7 +143,7 @@
         LargeChange="0.01"
         Maximum="0.15"
         Minimum="-0.15"
-        SmallChange="0.001"
+        SmallChange="0.01"
         Value="{Binding Config.PitchScale, Mode=TwoWay}" />
     </StackPanel>
 
@@ -144,9 +157,12 @@
         MinWidth="60"
         Margin="5,0,0,0"
         HorizontalContentAlignment="Right"
-        Content="{Binding ElementName=IntonationSlider, Path=Value, Mode=OneWay, StringFormat=F2}" />
+        Content="{Binding ElementName=IntonationSlider, Path=Value, Mode=OneWay}"
+        ContentStringFormat="F2" />
       <Slider
         x:Name="IntonationSlider"
+        IsSnapToTickEnabled="True"
+        TickFrequency="0.01"
         Width="250"
         Margin="5,0,0,0"
         HorizontalAlignment="Left"
@@ -165,5 +181,6 @@
       TextWrapping="Wrap">
       <Run Text="{DynamicResource Voicevox_Description}" />
     </TextBlock>
-  </StackPanel>
+      </StackPanel>
+  </ScrollViewer>
 </UserControl>
