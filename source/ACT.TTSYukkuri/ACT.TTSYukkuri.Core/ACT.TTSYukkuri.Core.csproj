@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -145,6 +145,10 @@
     <Compile Include="Config\ViewModels\OpenJTalkConfigViewModel.cs" />
     <Compile Include="Config\ViewModels\StatusAlertConfigViewModel.cs" />
     <Compile Include="Config\ViewModels\YukkuriConfigViewModel.cs" />
+    <Compile Include="Config\ViewModels\VoicevoxConfigViewModel.cs" />
+    <Compile Include="Config\Views\VoicevoxConfigView.xaml.cs">
+      <DependentUpon>VoicevoxConfigView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Config\Views\BoyomiConfigView.xaml.cs">
       <DependentUpon>BoyomiConfigView.xaml</DependentUpon>
     </Compile>
@@ -206,6 +210,8 @@
       <DependentUpon>YukkuriConfigView.xaml</DependentUpon>
     </Compile>
     <Compile Include="Config\AlertTarget.cs" />
+    <Compile Include="Config\VoicevoxConfig.cs" />
+    <Compile Include="Voicevox\VoicevoxSpeechController.cs" />
     <Compile Include="Config\VoiceroidConfig.cs" />
     <Compile Include="Config\YukkuriConfig.cs" />
     <Compile Include="Discord\Converters\BoolConverter.cs" />
@@ -440,6 +446,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Config\Views\YukkuriConfigView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Config\Views\VoicevoxConfigView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

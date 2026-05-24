@@ -291,6 +291,13 @@ namespace ACT.XIVLog
                 }
                 else
                 {
+                    // リモートOBS時: 録画開始前にファイル名をセット
+                    if (Config.Instance.IsRemoteObs)
+                    {
+                        var filenameFormatting = this.BuildRemoteFilename();
+                        await this.SendSetFilenameFormatting(filenameFormatting);
+                    }
+
                     var (success, _) = await this.SendToggleRecording(true);
                     if (!success)
                     {
@@ -392,21 +399,31 @@ namespace ACT.XIVLog
                     if (!success || string.IsNullOrEmpty(path))
                         return;
 
-                    await Task.Delay(500);
-                    for (int i = 0; i < 9; i++)
+                    if (Config.Instance.IsRemoteObs)
                     {
-                        if (IsFileReady(path))
-                        {
-                            outputPath = path;
-                            break;
-                        }
-                        await Task.Delay(500);
+                        // リモートOBS: ファイル名はStartRecord前にSetProfileParameterで設定済み
+                        // リネーム・タグ付けはスキップ（Sub PC上のファイルにアクセスできないため）
+                        AppLogger.Info($"[XIVLog] リモート録画を停止しました。保存先: {path}");
                     }
-
-                    if (string.IsNullOrEmpty(outputPath))
+                    else
                     {
-                        AppLogger.Info("[XIVLog] output file not ready.");
-                        return;
+                        // ローカルOBS: 従来通りファイル待機→リネーム→タグ付け
+                        await Task.Delay(500);
+                        for (int i = 0; i < 9; i++)
+                        {
+                            if (IsFileReady(path))
+                            {
+                                outputPath = path;
+                                break;
+                            }
+                            await Task.Delay(500);
+                        }
+
+                        if (string.IsNullOrEmpty(outputPath))
+                        {
+                            AppLogger.Info("[XIVLog] output file not ready.");
+                            return;
+                        }
                     }
                 }
 
@@ -533,6 +550,150 @@ namespace ACT.XIVLog
             }
         }
 
+        /// <summary>
+        /// リモートOBS録画用のファイル名テンプレートを生成する。
+        /// duration/deathCountは録画開始時には不明なため含めない。
+        /// </summary>
+        private string BuildRemoteFilename()
+        {
+            var prefix = Config.Instance.VideFilePrefix?.Trim();
+            prefix = string.IsNullOrEmpty(prefix) ? string.Empty : $"{prefix} ";
+
+            var contentName = !string.IsNullOrEmpty(this.contentName)
+                ? this.contentName
+                : ActGlobals.oFormActMain.CurrentZone;
+
+            // ファイル名に使用できない文字を除去する
+            var invalidChars = Path.GetInvalidFileNameChars();
+            contentName = string.Concat(contentName.Where(c => !invalidChars.Contains(c)));
+
+            return $"{prefix}{this.startTime:yyyy-MM-dd HH-mm} {contentName} try{this.TryCount:00}";
+        }
+
+        /// <summary>
+        /// リモートOBSのFilenameFormattingをWebSocket経由で設定する。
+        /// 録画開始前に呼び出すこと。
+        /// </summary>
+        private async Task SendSetFilenameFormatting(string filenameFormatting)
+        {
+            WebSocket ws = null;
+            try
+            {
+                var helloReceived = new TaskCompletionSource<JObject>();
+                var identifyReceived = new TaskCompletionSource<bool>();
+                var setParamReceived = new TaskCompletionSource<bool>();
+
+                ws = new WebSocket($"ws://{Config.Instance.ObsWebSocketHost}:{Config.Instance.ObsWebSocketPort}");
+
+                ws.OnMessage += (sender, e) =>
+                {
+                    try
+                    {
+                        var json = JObject.Parse(e.Data);
+                        int op = json["op"]?.Value<int>() ?? -1;
+
+                        if (op == 0) // Hello
+                            helloReceived.TrySetResult(json["d"] as JObject);
+                        else if (op == 2) // Identified
+                            identifyReceived.TrySetResult(true);
+                        else if (op == 7) // RequestResponse
+                        {
+                            string reqType = json["d"]["requestType"]?.Value<string>();
+                            if (reqType == "SetProfileParameter")
+                            {
+                                var result = json["d"]["requestStatus"]["result"]?.Value<bool>() ?? false;
+                                setParamReceived.TrySetResult(result);
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        this.AppLogger.Info("[OBS WebSocket] FilenameFormatting JSON Parse error: " + ex.Message);
+                    }
+                };
+
+                ws.Connect();
+                if (!ws.IsAlive)
+                {
+                    this.AppLogger.Info("[OBS WebSocket] FilenameFormatting: 接続失敗。");
+                    return;
+                }
+
+                // Hello 待機
+                var helloDone = await Task.WhenAny(helloReceived.Task, Task.Delay(2000));
+                if (helloDone != helloReceived.Task) { ws.Close(); return; }
+
+                var helloData = helloReceived.Task.Result;
+
+                // Identify（認証処理）
+                string authString = null;
+                if (helloData["authentication"] != null)
+                {
+                    string challenge = helloData["authentication"]["challenge"].Value<string>();
+                    string salt = helloData["authentication"]["salt"].Value<string>();
+                    string password = Config.Instance.ObsWebSocketPassword ?? "";
+
+                    string secret = Convert.ToBase64String(
+                        System.Security.Cryptography.SHA256.Create().ComputeHash(
+                            Encoding.UTF8.GetBytes(password + salt)));
+                    authString = Convert.ToBase64String(
+                        System.Security.Cryptography.SHA256.Create().ComputeHash(
+                            Encoding.UTF8.GetBytes(secret + challenge)));
+                }
+
+                var identify = new
+                {
+                    op = 1,
+                    d = new
+                    {
+                        rpcVersion = helloData["rpcVersion"].Value<int>(),
+                        authentication = authString,
+                        eventSubscriptions = 0  // イベント不要
+                    }
+                };
+                ws.Send(JsonConvert.SerializeObject(identify));
+
+                var identifyDone = await Task.WhenAny(identifyReceived.Task, Task.Delay(2000));
+                if (identifyDone != identifyReceived.Task) { ws.Close(); return; }
+
+                // SetProfileParameter: FilenameFormatting
+                var setParam = new
+                {
+                    op = 6,
+                    d = new
+                    {
+                        requestType = "SetProfileParameter",
+                        requestId = Guid.NewGuid().ToString(),
+                        requestData = new
+                        {
+                            parameterCategory = "Output",
+                            parameterName = "FilenameFormatting",
+                            parameterValue = filenameFormatting
+                        }
+                    }
+                };
+                ws.Send(JsonConvert.SerializeObject(setParam));
+
+                var setParamDone = await Task.WhenAny(setParamReceived.Task, Task.Delay(2000));
+                if (setParamDone == setParamReceived.Task && setParamReceived.Task.Result)
+                {
+                    this.AppLogger.Info($"[OBS WebSocket] FilenameFormatting を設定: {filenameFormatting}");
+                }
+                else
+                {
+                    this.AppLogger.Info("[OBS WebSocket] FilenameFormatting: SetProfileParameter 失敗またはタイムアウト。");
+                }
+            }
+            catch (Exception ex)
+            {
+                this.AppLogger.Info("[OBS WebSocket] FilenameFormatting 例外: " + ex.ToString());
+            }
+            finally
+            {
+                ws?.Close();
+            }
+        }
+
         [MethodImpl(MethodImplOptions.NoInlining)]
         public async Task<(bool success, string outputPath)> SendToggleRecording(bool start)
         {
@@ -545,7 +706,7 @@ namespace ACT.XIVLog
                 var recordControlReceived = new TaskCompletionSource<bool>();
                 var recordStoppedReceived = new TaskCompletionSource<string>(); // outputPath
 
-                ws = new WebSocket("ws://127.0.0.1:4455");
+                ws = new WebSocket($"ws://{Config.Instance.ObsWebSocketHost}:{Config.Instance.ObsWebSocketPort}");
 
                 ws.OnMessage += (sender, e) =>
                     {
@@ -625,7 +786,7 @@ namespace ACT.XIVLog
                 {
                     string challenge = helloData["authentication"]["challenge"].Value<string>();
                     string salt = helloData["authentication"]["salt"].Value<string>();
-                    string password = ""; // そのうちUIで設定できるようにする
+                    string password = Config.Instance.ObsWebSocketPassword ?? "";
 
                     string secret = Convert.ToBase64String(
                         System.Security.Cryptography.SHA256.Create().ComputeHash(

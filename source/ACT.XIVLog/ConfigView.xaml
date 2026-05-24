@@ -120,6 +120,34 @@
                     <CheckBox Margin="0 8 0 0" Content="Use OBS WebSocket V5" IsChecked="{Binding Config.UseObsRpc, Mode=TwoWay}" ToolTip="Remote-control OBS Studio using WebSockets 5, SLOBS is no longer supported." />
           <!--<CheckBox Content="Use OBS" IsChecked="{Binding Config.UseObsWS, Mode=TwoWay}"/>-->
 
+          <!-- OBS WebSocket V5 接続設定 -->
+          <StackPanel
+            Margin="20 8 0 0"
+            Visibility="{Binding Config.UseObsRpc, Mode=OneWay, Converter={StaticResource VisibilityConverter}}">
+            <StackPanel Orientation="Horizontal">
+              <Label Width="50" Content="Host" />
+              <TextBox Width="200"
+                Text="{Binding Config.ObsWebSocketHost, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+              <Label Width="50" Content="Port" Margin="10 0 0 0" />
+              <xctk:IntegerUpDown Width="80"
+                Value="{Binding Config.ObsWebSocketPort, Mode=TwoWay}"
+                Minimum="1" Maximum="65535" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Margin="0 5 0 0">
+              <Label Width="100" Content="Password" />
+              <TextBox Width="200"
+                Text="{Binding Config.ObsWebSocketPassword, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+            </StackPanel>
+            <TextBlock Margin="0 5 0 0" Foreground="Gray" FontSize="13">
+              <TextBlock.Text>
+                <MultiBinding StringFormat="ws://{0}:{1}">
+                  <Binding Path="Config.ObsWebSocketHost" Mode="OneWay" />
+                  <Binding Path="Config.ObsWebSocketPort" Mode="OneWay" />
+                </MultiBinding>
+              </TextBlock.Text>
+            </TextBlock>
+          </StackPanel>
+
           <StackPanel Orientation="Horizontal" Margin="0 10 0 0" HorizontalAlignment="Left">
             <Button
               Content="REC"
