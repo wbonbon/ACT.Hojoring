@@ -1,4 +1,4 @@
-﻿# 現在のディレクトリを取得する (PS7+ compliant)
+# 現在のディレクトリを取得する (PS7+ compliant)
 $cd = $PSScriptRoot
 Set-Location $cd
 
@@ -84,6 +84,13 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
     Remove-Item -Path .\ACT.Hojoring\bin\x64\Release\* -Force -Recurse -ErrorAction SilentlyContinue
 }
 
+'●Build ACT.Hojoring.DiscordHelper'
+dotnet publish .\ACT.Hojoring.DiscordHelper\ACT.Hojoring.DiscordHelper.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\ACT.Hojoring\bin\x64\Release\discord | Write-Output
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "DiscordHelper Publish Failed! Exit Code: $LASTEXITCODE"
+    EndMake
+}
+
 '●Build ACT.Hojoring Release'
 Start-Sleep -m 500
 
@@ -119,7 +126,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
 
     '●フォルダを整理する'
     # フォルダが存在する場合のみ移動を行う
-    $targets = @("yukkuri", "openJTalk", "lib", "tools")
+    $targets = @("yukkuri", "openJTalk", "lib", "tools", "discord")
     foreach ($t in $targets) {
         if (Test-Path $t) {
             $dest = Join-Path "bin" $t
@@ -155,7 +162,8 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
     Remove-Item bin\openJTalk\dic\sys.dic -ErrorAction SilentlyContinue
     Remove-Item bin\openJTalk\voice\* -ErrorAction SilentlyContinue
     Remove-Item bin\yukkuri\aq_dic\aqdic.bin -ErrorAction SilentlyContinue
-    Remove-Item bin\lib\*.dll -ErrorAction SilentlyContinue
+    # libopus.dll / libsodium.dll はヘルパー側でロードするため残す
+    # Remove-Item bin\lib\*.dll -ErrorAction SilentlyContinue
     
     '●その他のリソースを間引く'
     Remove-Item resources\icon\Common\*.png -ErrorAction SilentlyContinue

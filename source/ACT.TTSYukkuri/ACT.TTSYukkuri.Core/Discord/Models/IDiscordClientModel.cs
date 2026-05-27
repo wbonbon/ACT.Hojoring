@@ -53,4 +53,10 @@ namespace ACT.TTSYukkuri.Discord.Models
 
         public dynamic ChannelObject { get; set; }
     }
+
+    public enum ChannelType
+    {
+        Text = 0,
+        Voice,
+    }
 }
