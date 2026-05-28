@@ -1,4 +1,4 @@
-﻿# 現在のディレクトリを取得する (PS7+ compliant)
+# 現在のディレクトリを取得する (PS7+ compliant)
 $cd = $PSScriptRoot
 Set-Location $cd
 
@@ -84,6 +84,13 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
     Remove-Item -Path .\ACT.Hojoring\bin\x64\Release\* -Force -Recurse -ErrorAction SilentlyContinue
 }
 
+'●Build ACT.Hojoring.DiscordHelper'
+dotnet publish .\ACT.Hojoring.DiscordHelper\ACT.Hojoring.DiscordHelper.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o .\ACT.Hojoring\bin\x64\Release\discord | Write-Output
+if ($LASTEXITCODE -ne 0) {
+    Write-Error "DiscordHelper Publish Failed! Exit Code: $LASTEXITCODE"
+    EndMake
+}
+
 '●Build ACT.Hojoring Release'
 Start-Sleep -m 500
 
@@ -119,7 +126,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
 
     '●フォルダを整理する'
     # フォルダが存在する場合のみ移動を行う
-    $targets = @("yukkuri", "openJTalk", "lib", "tools")
+    $targets = @("yukkuri", "openJTalk", "lib", "tools", "discord")
     foreach ($t in $targets) {
         if (Test-Path $t) {
             $dest = Join-Path "bin" $t
@@ -155,7 +162,8 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
     Remove-Item bin\openJTalk\dic\sys.dic -ErrorAction SilentlyContinue
     Remove-Item bin\openJTalk\voice\* -ErrorAction SilentlyContinue
     Remove-Item bin\yukkuri\aq_dic\aqdic.bin -ErrorAction SilentlyContinue
-    Remove-Item bin\lib\*.dll -ErrorAction SilentlyContinue
+    # libopus.dll / libsodium.dll はヘルパー側でロードするため残す
+    # Remove-Item bin\lib\*.dll -ErrorAction SilentlyContinue
     
     '●その他のリソースを間引く'
     Remove-Item resources\icon\Common\*.png -ErrorAction SilentlyContinue
@@ -168,6 +176,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
     Remove-Item resources\icon\Timeline_JP\* -ErrorAction SilentlyContinue
 
     # --- 個別アーカイブ作成セクション開始 ---
+<#
     $deployDir = Get-Location
     $workRoot = Join-Path $startdir "build_work"
     if (Test-Path $workRoot) { Remove-Item $workRoot -Recurse -Force }
@@ -212,35 +221,36 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
         }
 
         $baseName = "ACT.Hojoring.$($task.Name)-$versionShort"
-        $zipPath = Join-Path $archives ($baseName + ".zip")
+        # $zipPath = Join-Path $archives ($baseName + ".zip")
         $sevenZipPath = Join-Path $archives ($baseName + ".7z")
 
-        if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+        # if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
         if (Test-Path $sevenZipPath) { Remove-Item $sevenZipPath -Force }
 
         Push-Location $targetDir
-        & $sevenZipExe a -tzip -y $zipPath "*" | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Failed to zip $baseName" }
+        # & $sevenZipExe a -tzip -y $zipPath "*" | Out-Null
+        # if ($LASTEXITCODE -ne 0) { Write-Warning "Failed to zip $baseName" }
         
         & $sevenZipExe a -mx9 -y $sevenZipPath "*" | Out-Null
         if ($LASTEXITCODE -ne 0) { Write-Warning "Failed to 7z $baseName" }
         
         Pop-Location
         
-        Write-Output "  -> Created Component: $baseName.zip / .7z"
+        Write-Output "  -> Created Component: $baseName.7z"
     }
+#>
 
     '●配布ファイルをアーカイブする (Full Package / 並列実行)'
     $archiveBase = "ACT.Hojoring-" + $versionShort
-    $fullZipPath = Join-Path $archives ($archiveBase + ".zip")
+    # $fullZipPath = Join-Path $archives ($archiveBase + ".zip")
     $full7zPath = Join-Path $archives ($archiveBase + ".7z")
 
-    if (Test-Path $fullZipPath) { Remove-Item $fullZipPath -Force }
+    # if (Test-Path $fullZipPath) { Remove-Item $fullZipPath -Force }
     if (Test-Path $full7zPath) { Remove-Item $full7zPath -Force }
 
     @(
-        @{ Type = "7z"; Args = "-mx9 -r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $full7zPath },
-        @{ Type = "zip"; Args = "-r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $fullZipPath }
+        @{ Type = "7z"; Args = "-mx9 -r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $full7zPath }
+        # @{ Type = "zip"; Args = "-r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $fullZipPath }
     ) | ForEach-Object -Parallel {
         $sevenZipExe = $using:7z
         $argsList = $_.Args.Split(" ")
@@ -250,7 +260,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
         Write-Output "  -> Created Full Package: $($_.Target | Split-Path -Leaf)"
     }
 
-    Remove-Item $workRoot -Recurse -Force
+    # Remove-Item $workRoot -Recurse -Force
     Set-Location $startdir
 }
 
