@@ -85,7 +85,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
 }
 
 '●Build ACT.Hojoring.DiscordHelper'
-dotnet publish .\ACT.Hojoring.DiscordHelper\ACT.Hojoring.DiscordHelper.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o .\ACT.Hojoring\bin\x64\Release\discord | Write-Output
+dotnet publish .\ACT.Hojoring.DiscordHelper\ACT.Hojoring.DiscordHelper.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=false -o .\ACT.Hojoring\bin\x64\Release\discord | Write-Output
 if ($LASTEXITCODE -ne 0) {
     Write-Error "DiscordHelper Publish Failed! Exit Code: $LASTEXITCODE"
     EndMake
