@@ -176,6 +176,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
     Remove-Item resources\icon\Timeline_JP\* -ErrorAction SilentlyContinue
 
     # --- 個別アーカイブ作成セクション開始 ---
+<#
     $deployDir = Get-Location
     $workRoot = Join-Path $startdir "build_work"
     if (Test-Path $workRoot) { Remove-Item $workRoot -Recurse -Force }
@@ -220,35 +221,36 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
         }
 
         $baseName = "ACT.Hojoring.$($task.Name)-$versionShort"
-        $zipPath = Join-Path $archives ($baseName + ".zip")
+        # $zipPath = Join-Path $archives ($baseName + ".zip")
         $sevenZipPath = Join-Path $archives ($baseName + ".7z")
 
-        if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
+        # if (Test-Path $zipPath) { Remove-Item $zipPath -Force }
         if (Test-Path $sevenZipPath) { Remove-Item $sevenZipPath -Force }
 
         Push-Location $targetDir
-        & $sevenZipExe a -tzip -y $zipPath "*" | Out-Null
-        if ($LASTEXITCODE -ne 0) { Write-Warning "Failed to zip $baseName" }
+        # & $sevenZipExe a -tzip -y $zipPath "*" | Out-Null
+        # if ($LASTEXITCODE -ne 0) { Write-Warning "Failed to zip $baseName" }
         
         & $sevenZipExe a -mx9 -y $sevenZipPath "*" | Out-Null
         if ($LASTEXITCODE -ne 0) { Write-Warning "Failed to 7z $baseName" }
         
         Pop-Location
         
-        Write-Output "  -> Created Component: $baseName.zip / .7z"
+        Write-Output "  -> Created Component: $baseName.7z"
     }
+#>
 
     '●配布ファイルをアーカイブする (Full Package / 並列実行)'
     $archiveBase = "ACT.Hojoring-" + $versionShort
-    $fullZipPath = Join-Path $archives ($archiveBase + ".zip")
+    # $fullZipPath = Join-Path $archives ($archiveBase + ".zip")
     $full7zPath = Join-Path $archives ($archiveBase + ".7z")
 
-    if (Test-Path $fullZipPath) { Remove-Item $fullZipPath -Force }
+    # if (Test-Path $fullZipPath) { Remove-Item $fullZipPath -Force }
     if (Test-Path $full7zPath) { Remove-Item $full7zPath -Force }
 
     @(
-        @{ Type = "7z"; Args = "-mx9 -r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $full7zPath },
-        @{ Type = "zip"; Args = "-r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $fullZipPath }
+        @{ Type = "7z"; Args = "-mx9 -r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $full7zPath }
+        # @{ Type = "zip"; Args = "-r -xr!*.zip -xr!*.7z -xr!*.pdb -xr!archives\" ; Target = $fullZipPath }
     ) | ForEach-Object -Parallel {
         $sevenZipExe = $using:7z
         $argsList = $_.Args.Split(" ")
@@ -258,7 +260,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
         Write-Output "  -> Created Full Package: $($_.Target | Split-Path -Leaf)"
     }
 
-    Remove-Item $workRoot -Recurse -Force
+    # Remove-Item $workRoot -Recurse -Force
     Set-Location $startdir
 }
 
