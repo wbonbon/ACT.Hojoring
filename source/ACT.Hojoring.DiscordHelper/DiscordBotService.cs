@@ -18,6 +18,7 @@ namespace ACT.Hojoring.DiscordHelper
     {
         private DiscordSocketClient? _discordClient;
         private IAudioClient? _audioClient;
+        private AudioOutStream? _audioOutStream;
 
         private readonly ConcurrentQueue<string> _playQueue = new ConcurrentQueue<string>();
         private Thread? _playWorker;
@@ -196,6 +197,8 @@ namespace ACT.Hojoring.DiscordHelper
                 _audioClient = await channel.ConnectAsync();
                 Log($"Joined Voice Channel: {channel.Name}");
 
+                _audioOutStream = _audioClient.CreatePCMStream(AudioApplication.Voice, bufferMillis: 200);
+
                 lock (SendBlocker)
                 {
                     ClearQueue();
@@ -236,6 +239,12 @@ namespace ACT.Hojoring.DiscordHelper
                     _playWorker = null;
                 }
                 ClearQueue();
+
+                if (_audioOutStream != null)
+                {
+                    _audioOutStream.Dispose();
+                    _audioOutStream = null;
+                }
             }
 
             if (_audioClient != null)
@@ -321,38 +330,32 @@ namespace ACT.Hojoring.DiscordHelper
         {
             lock (SendBlocker)
             {
-                if (!IsJoinedVoice || _audioClient == null) return;
+                if (!IsJoinedVoice || _audioClient == null || _audioOutStream == null) return;
 
                 Log($"Play Sound: {Path.GetFileName(filePath)}");
 
-                // 再生ごとに新しくPCMストリームを生成する (Discord.Netの仕様に適合)
-                using (var audioStream = _audioClient.CreatePCMStream(
-                    AudioApplication.Voice,
-                    bufferMillis: 200))
+                try
+                {
+                    _audioClient.SetSpeakingAsync(true).GetAwaiter().GetResult();
+                    // NAudioリサンプラー経由でストリームに流し込む
+                    AudioPipeline.SendAudio(filePath, _audioOutStream);
+                    
+                    // バッファを完全にフラッシュする
+                    _audioOutStream.Flush();
+                }
+                catch (Exception ex)
+                {
+                    Log("Play Sound Error", ex, true);
+                }
+                finally
                 {
                     try
                     {
-                        _audioClient.SetSpeakingAsync(true).GetAwaiter().GetResult();
-                        // NAudioリサンプラー経由でストリームに流し込む
-                        AudioPipeline.SendAudio(filePath, audioStream);
-                        
-                        // バッファを完全にフラッシュする
-                        audioStream.Flush();
+                        _audioClient.SetSpeakingAsync(false).GetAwaiter().GetResult();
                     }
                     catch (Exception ex)
                     {
-                        Log("Play Sound Error", ex, true);
-                    }
-                    finally
-                    {
-                        try
-                        {
-                            _audioClient.SetSpeakingAsync(false).GetAwaiter().GetResult();
-                        }
-                        catch (Exception ex)
-                        {
-                            Log("SetSpeakingAsync(false) Error", ex, false);
-                        }
+                        Log("SetSpeakingAsync(false) Error", ex, false);
                     }
                 }
             }

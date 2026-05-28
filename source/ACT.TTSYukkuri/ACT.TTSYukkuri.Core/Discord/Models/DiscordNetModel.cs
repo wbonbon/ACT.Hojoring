@@ -239,8 +239,8 @@ namespace ACT.TTSYukkuri.Discord.Models
         {
             this.AppendLogLine("Disconnecting from Discord...");
 
-            // ヘルパーに明示的に切断コマンドを送る
-            this.SendIpcMessage(new IpcMessage { type = "disconnect" });
+            // ヘルパーに同期的に切断コマンドを送る
+            this.SendIpcMessageSync(new IpcMessage { type = "disconnect" });
 
             // Pipe とプロセスの破棄
             this.CleanupIpc();
@@ -335,17 +335,6 @@ namespace ACT.TTSYukkuri.Discord.Models
 
             this.AppendLogLine("Starting Discord Helper process...");
 
-#if DEBUG
-            var psi = new ProcessStartInfo
-            {
-                FileName = helperPath,
-                Arguments = $"--parent-pid {Process.GetCurrentProcess().Id}",
-                CreateNoWindow = false,
-                UseShellExecute = false,
-                RedirectStandardOutput = false,
-                RedirectStandardError = false
-            };
-#else
             var psi = new ProcessStartInfo
             {
                 FileName = helperPath,
@@ -355,7 +344,6 @@ namespace ACT.TTSYukkuri.Discord.Models
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
             };
-#endif
 
             this.helperProcess = new Process { StartInfo = psi };
             this.helperProcess.EnableRaisingEvents = true;
@@ -363,11 +351,9 @@ namespace ACT.TTSYukkuri.Discord.Models
 
             if (this.helperProcess.Start())
             {
-#if !DEBUG
                 // バックグラウンドでコンソール出力を読み取り
                 _ = Task.Run(() => this.ReadProcessOutputAsync(this.helperProcess.StandardOutput));
                 _ = Task.Run(() => this.ReadProcessOutputAsync(this.helperProcess.StandardError));
-#endif
             }
             else
             {
@@ -377,24 +363,29 @@ namespace ACT.TTSYukkuri.Discord.Models
 
         private void StopHelperProcess()
         {
-            if (this.helperProcess == null) return;
+            var process = Interlocked.Exchange(ref this.helperProcess, null);
+            if (process == null) return;
 
             try
             {
-                if (!this.helperProcess.HasExited)
+                process.Exited -= this.HelperProcess_Exited;
+                if (!process.HasExited)
                 {
-                    this.AppendLogLine("Stopping Discord Helper process...");
-                    this.helperProcess.Kill();
+                    this.AppendLogLine("Waiting for Discord Helper process to exit gracefully...");
+                    if (!process.WaitForExit(1000))
+                    {
+                        this.AppendLogLine("Discord Helper did not exit in time. Killing process...");
+                        process.Kill();
+                    }
                 }
             }
             catch (Exception ex)
             {
-                this.AppLogger.Error(ex, "Failed to kill helper process.");
+                this.AppLogger.Error(ex, "Failed to stop helper process.");
             }
             finally
             {
-                this.helperProcess.Dispose();
-                this.helperProcess = null;
+                process.Dispose();
             }
         }
 
@@ -478,6 +469,36 @@ namespace ACT.TTSYukkuri.Discord.Models
             {
                 this.pipeClient.Dispose();
                 this.pipeClient = null;
+            }
+        }
+
+        /// <summary>
+        /// ヘルパープロセスへ JSON メッセージを同期的に送信します（スレッドセーフ）。
+        /// </summary>
+        private void SendIpcMessageSync(IpcMessage msg)
+        {
+            lock (this.sendLock)
+            {
+                if (this.pipeWriter == null || this.pipeClient == null || !this.pipeClient.IsConnected)
+                {
+                    return;
+                }
+
+                try
+                {
+                    var json = JsonConvert.SerializeObject(msg);
+                    this.pipeWriter.WriteLine(json);
+                    this.pipeWriter.Flush();
+                }
+                catch (Exception ex)
+                {
+                    // 切断処理中またはパイプ破棄時の例外は正常系のため無視する
+                    if (ex is OperationCanceledException || ex is ObjectDisposedException || ex.InnerException is ObjectDisposedException)
+                    {
+                        return;
+                    }
+                    this.AppendLogLine("Error sending sync message to helper.", ex, true);
+                }
             }
         }
 
