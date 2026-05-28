@@ -252,7 +252,12 @@
   <ItemGroup>
     <Resource Include="resources\images\CeVIO.ico" />
     <Resource Include="resources\images\CeVIO.png" />
-    <Content Include="lib\libdave.dll" />
+    <Content Include="lib\libdave.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lib\dave.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Yukkuri\aq_dic\GenUserDic.exe">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
