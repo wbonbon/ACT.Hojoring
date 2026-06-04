@@ -117,7 +117,7 @@ namespace ACT.Hojoring.DiscordHelper
                 {
                     GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.GuildVoiceStates,
                     LogLevel = LogSeverity.Debug,
-                    EnableVoiceDaveEncryption = true
+                    EnableVoiceDaveEncryption = false
                 };
                 _discordClient = new DiscordSocketClient(config);
                 _discordClient.Log += message =>
