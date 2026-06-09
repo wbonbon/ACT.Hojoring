@@ -27,14 +27,14 @@ namespace ACT.TTSYukkuri.Discord.ViewModels
             this.connectCommand ?? (this.connectCommand = new DelegateCommand(async () =>
             {
                 this.Model.Connect();
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
+                await Task.Delay(TimeSpan.FromSeconds(3));
             }));
 
         public ICommand DisconnectCommand =>
             this.disconnectCommand ?? (this.disconnectCommand = new DelegateCommand(async () =>
             {
                 this.Model.Disconnect();
-                await Task.Delay(TimeSpan.FromMilliseconds(100));
+                await Task.Delay(TimeSpan.FromSeconds(3));
             }));
 
         public ICommand JoinCommand =>
@@ -44,7 +44,7 @@ namespace ACT.TTSYukkuri.Discord.ViewModels
                 {
                     this.View.JoinVoiceChannelLink.IsEnabled = false;
                     this.Model.JoinVoiceChannel();
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
                 }
                 finally
                 {
@@ -59,7 +59,7 @@ namespace ACT.TTSYukkuri.Discord.ViewModels
                 {
                     this.View.LeaveTextVoiceLink.IsEnabled = false;
                     this.Model.LeaveVoiceChannel();
-                    await Task.Delay(TimeSpan.FromMilliseconds(100));
+                    await Task.Delay(TimeSpan.FromSeconds(3));
                 }
                 finally
                 {

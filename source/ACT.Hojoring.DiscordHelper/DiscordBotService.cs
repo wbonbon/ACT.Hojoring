@@ -25,6 +25,35 @@ namespace ACT.Hojoring.DiscordHelper
         private volatile bool _playWorkerRunning = false;
         private static readonly object SendBlocker = new object();
 
+        // 排他制御・クールダウン用
+        private readonly SemaphoreSlim _connectionSemaphore = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim _voiceSemaphore = new SemaphoreSlim(1, 1);
+        private DateTime _lastConnectionTime = DateTime.MinValue;
+        private DateTime _lastVoiceTime = DateTime.MinValue;
+        private const int CooldownMs = 3000;
+
+        private async Task ApplyCooldownAsync(string type, bool isVoice)
+        {
+            var now = DateTime.UtcNow;
+            var lastTime = isVoice ? _lastVoiceTime : _lastConnectionTime;
+            var elapsed = (now - lastTime).TotalMilliseconds;
+            if (elapsed < CooldownMs)
+            {
+                var delay = CooldownMs - (int)elapsed;
+                Log($"[Cooldown] Applying {type} cooldown: waiting {delay}ms before next operation...");
+                await Task.Delay(delay);
+            }
+            
+            if (isVoice)
+            {
+                _lastVoiceTime = DateTime.UtcNow;
+            }
+            else
+            {
+                _lastConnectionTime = DateTime.UtcNow;
+            }
+        }
+
         // イベント定義 (Program.cs に状態変更やログを通知するため)
         public event Action<bool, bool>? OnStatusChanged;
         public event Action<IpcMessage>? OnChannelsUpdated;
@@ -111,43 +140,65 @@ namespace ACT.Hojoring.DiscordHelper
         /// </summary>
         public async Task ConnectAsync(string token)
         {
-            if (_discordClient == null)
-            {
-                var config = new DiscordSocketConfig
-                {
-                    GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.GuildVoiceStates,
-                    LogLevel = LogSeverity.Debug,
-                    EnableVoiceDaveEncryption = false
-                };
-                _discordClient = new DiscordSocketClient(config);
-                _discordClient.Log += message =>
-                {
-                    // DAVEプロトコル移行期の非クリティカルな警告ログ（Malformed Frame / Unknown OpCode）をフィルタリングしてコンソールの不要な混乱を防ぐ
-                    if (message.Message != null && 
-                        (message.Message.Contains("Malformed Frame") || 
-                         message.Message.Contains("Unknown OpCode (15)")))
-                    {
-                        return Task.CompletedTask;
-                    }
-
-                    var isError = message.Severity == LogSeverity.Error || message.Severity == LogSeverity.Critical;
-                    Log($"[Discord.Net] {message.Source}: {message.Message}", message.Exception, isError);
-                    return Task.CompletedTask;
-                };
-                _discordClient.Ready += DiscordClientOnReady;
-                _discordClient.LoggedOut += DiscordClientOnLoggedOut;
-            }
-
+            await _connectionSemaphore.WaitAsync();
             try
             {
-                Log("Connecting to Discord...");
-                await _discordClient.LoginAsync(TokenType.Bot, token);
-                await _discordClient.StartAsync();
+                await ApplyCooldownAsync("Connection", false);
+
+                if (_discordClient == null)
+                {
+                    var config = new DiscordSocketConfig
+                    {
+                        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.GuildVoiceStates,
+                        LogLevel = LogSeverity.Debug,
+                        EnableVoiceDaveEncryption = true
+                    };
+                    _discordClient = new DiscordSocketClient(config);
+                    _discordClient.Log += message =>
+                    {
+                        // DAVEプロトコル移行期の非クリティカルな警告ログ（Malformed Frame / Unknown OpCode）をフィルタリングしてコンソールの不要な混乱を防ぐ
+                        if (message.Message != null && 
+                            (message.Message.Contains("Malformed Frame") || 
+                             message.Message.Contains("Unknown OpCode (15)")))
+                        {
+                            return Task.CompletedTask;
+                        }
+
+                        var isError = message.Severity == LogSeverity.Error || message.Severity == LogSeverity.Critical;
+                        Log($"[Discord.Net] {message.Source}: {message.Message}", message.Exception, isError);
+
+                        // レートリミットのエラーを検知してユーザーに通知する
+                        if (message.Message != null && 
+                            (message.Message.Contains("Rate limit", StringComparison.OrdinalIgnoreCase) || 
+                             message.Message.Contains("rate-limit", StringComparison.OrdinalIgnoreCase) || 
+                             message.Message.Contains("4008") ||
+                             message.Message.Contains("Too Many Requests", StringComparison.OrdinalIgnoreCase) ||
+                             (message.Exception != null && message.Exception.ToString().Contains("4008"))))
+                        {
+                            OnError?.Invoke("Discord APIのレートリミット（連打による一時ブロック）を検知しました。サーバー側の安全措置により、しばらくの間（数十分〜数時間）BOTの音声が出なくなるか、接続できなくなります。頻繁なデバイス切り替えや接続/切断はお控えください。");
+                        }
+
+                        return Task.CompletedTask;
+                    };
+                    _discordClient.Ready += DiscordClientOnReady;
+                    _discordClient.LoggedOut += DiscordClientOnLoggedOut;
+                }
+
+                try
+                {
+                    Log("Connecting to Discord...");
+                    await _discordClient.LoginAsync(TokenType.Bot, token);
+                    await _discordClient.StartAsync();
+                }
+                catch (Exception ex)
+                {
+                    Log("Connection Error", ex, true);
+                    OnError?.Invoke($"Connection Error: {ex.Message}");
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                Log("Connection Error", ex, true);
-                OnError?.Invoke($"Connection Error: {ex.Message}");
+                _connectionSemaphore.Release();
             }
         }
 
@@ -156,19 +207,29 @@ namespace ACT.Hojoring.DiscordHelper
         /// </summary>
         public async Task DisconnectAsync()
         {
-            Log("Disconnecting from Discord...");
-            ClearQueue();
-            await LeaveVoiceAsync();
-
-            if (_discordClient != null)
+            await _connectionSemaphore.WaitAsync();
+            try
             {
-                await _discordClient.StopAsync();
-                await _discordClient.LogoutAsync();
-                _discordClient.Dispose();
-                _discordClient = null;
+                await ApplyCooldownAsync("Disconnection", false);
+
+                Log("Disconnecting from Discord...");
+                ClearQueue();
+                await LeaveVoiceAsync();
+
+                if (_discordClient != null)
+                {
+                    await _discordClient.StopAsync();
+                    await _discordClient.LogoutAsync();
+                    _discordClient.Dispose();
+                    _discordClient = null;
+                }
+                
+                NotifyStatus();
             }
-            
-            NotifyStatus();
+            finally
+            {
+                _connectionSemaphore.Release();
+            }
         }
 
         /// <summary>
@@ -176,51 +237,61 @@ namespace ACT.Hojoring.DiscordHelper
         /// </summary>
         public async Task JoinVoiceAsync(string channelId)
         {
-            if (_discordClient == null) return;
-
-            if (!ulong.TryParse(channelId, out var id))
-            {
-                OnError?.Invoke($"Invalid channel ID: {channelId}");
-                return;
-            }
-
-            var channel = _discordClient.GetChannel(id) as SocketVoiceChannel;
-            if (channel == null)
-            {
-                OnError?.Invoke($"Voice channel not found: {channelId}");
-                return;
-            }
-
+            await _voiceSemaphore.WaitAsync();
             try
             {
-                Log($"Joining Voice Channel: [{channel.Guild.Name}] {channel.Name}");
-                _audioClient = await channel.ConnectAsync();
-                Log($"Joined Voice Channel: {channel.Name}");
+                await ApplyCooldownAsync("JoinVoice", true);
 
-                _audioOutStream = _audioClient.CreatePCMStream(AudioApplication.Voice, bufferMillis: 200);
+                if (_discordClient == null) return;
 
-                lock (SendBlocker)
+                if (!ulong.TryParse(channelId, out var id))
                 {
-                    ClearQueue();
-
-                    if (_playWorker == null || !_playWorker.IsAlive)
-                    {
-                        _playWorkerRunning = true;
-                        _playWorker = new Thread(PlayThread)
-                        {
-                            IsBackground = true,
-                            Priority = ThreadPriority.BelowNormal
-                        };
-                        _playWorker.Start();
-                    }
+                    OnError?.Invoke($"Invalid channel ID: {channelId}");
+                    return;
                 }
 
-                NotifyStatus();
+                var channel = _discordClient.GetChannel(id) as SocketVoiceChannel;
+                if (channel == null)
+                {
+                    OnError?.Invoke($"Voice channel not found: {channelId}");
+                    return;
+                }
+
+                try
+                {
+                    Log($"Joining Voice Channel: [{channel.Guild.Name}] {channel.Name}");
+                    _audioClient = await channel.ConnectAsync();
+                    Log($"Joined Voice Channel: {channel.Name}");
+
+                    _audioOutStream = _audioClient.CreatePCMStream(AudioApplication.Voice, bufferMillis: 200);
+
+                    lock (SendBlocker)
+                    {
+                        ClearQueue();
+
+                        if (_playWorker == null || !_playWorker.IsAlive)
+                        {
+                            _playWorkerRunning = true;
+                            _playWorker = new Thread(PlayThread)
+                            {
+                                IsBackground = true,
+                                Priority = ThreadPriority.BelowNormal
+                            };
+                            _playWorker.Start();
+                        }
+                    }
+
+                    NotifyStatus();
+                }
+                catch (Exception ex)
+                {
+                    Log("Join Voice Channel Error", ex, true);
+                    OnError?.Invoke($"Join Voice Error: {ex.Message}");
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                Log("Join Voice Channel Error", ex, true);
-                OnError?.Invoke($"Join Voice Error: {ex.Message}");
+                _voiceSemaphore.Release();
             }
         }
 
@@ -229,33 +300,43 @@ namespace ACT.Hojoring.DiscordHelper
         /// </summary>
         public async Task LeaveVoiceAsync()
         {
-            _playWorkerRunning = false;
-            
-            lock (SendBlocker)
+            await _voiceSemaphore.WaitAsync();
+            try
             {
-                if (_playWorker != null)
-                {
-                    _playWorker.Join(TimeSpan.FromMilliseconds(500));
-                    _playWorker = null;
-                }
-                ClearQueue();
+                await ApplyCooldownAsync("LeaveVoice", true);
 
-                if (_audioOutStream != null)
+                _playWorkerRunning = false;
+                
+                lock (SendBlocker)
                 {
-                    _audioOutStream.Dispose();
-                    _audioOutStream = null;
+                    if (_playWorker != null)
+                    {
+                        _playWorker.Join(TimeSpan.FromMilliseconds(500));
+                        _playWorker = null;
+                    }
+                    ClearQueue();
+
+                    if (_audioOutStream != null)
+                    {
+                        _audioOutStream.Dispose();
+                        _audioOutStream = null;
+                    }
                 }
+
+                if (_audioClient != null)
+                {
+                    await _audioClient.StopAsync();
+                    _audioClient.Dispose();
+                    _audioClient = null;
+                }
+
+                Log("Left Voice Channel");
+                NotifyStatus();
             }
-
-            if (_audioClient != null)
+            finally
             {
-                await _audioClient.StopAsync();
-                _audioClient.Dispose();
-                _audioClient = null;
+                _voiceSemaphore.Release();
             }
-
-            Log("Left Voice Channel");
-            NotifyStatus();
         }
 
         /// <summary>
