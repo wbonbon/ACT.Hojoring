@@ -45,6 +45,13 @@ namespace ACT.SpecialSpellTimer
             RegexOptions.Compiled);
 
         /// <summary>
+        /// TTSサブコマンド
+        /// </summary>
+        private readonly static Regex ttsSubCommand = new Regex(
+            @"/ttssub\s+(?<text>.*)",
+            RegexOptions.Compiled);
+
+        /// <summary>
         /// オプションコマンド
         /// </summary>
         private static readonly Lazy<Regex> lazyOptionCommand = new Lazy<Regex>(() => new Regex(
@@ -72,7 +79,8 @@ namespace ACT.SpecialSpellTimer
 
             // 正規表現の前にキーワードがなければ抜けてしまう
             if (!logLine.Contains("/spespe") &&
-                !logLine.Contains("/tts"))
+                !logLine.Contains("/tts") &&
+                !logLine.Contains("/ttssub"))
             {
                 return false;
             }
@@ -96,6 +104,13 @@ namespace ACT.SpecialSpellTimer
             {
                 // 戦闘中ならば鳴らさない
                 return !inCombat;
+            }
+
+            // TTSサブコマンドとマッチングする
+            if (MatchTTSSubCommand(logLine))
+            {
+                // サウンドを鳴らさない
+                return false;
             }
 
             // TTSコマンドとマッチングする
@@ -358,6 +373,24 @@ namespace ACT.SpecialSpellTimer
             if (!string.IsNullOrEmpty(text))
             {
                 SoundController.Instance.Play(text);
+            }
+
+            return true;
+        }
+
+        public static bool MatchTTSSubCommand(
+            string logLine)
+        {
+            var match = ttsSubCommand.Match(logLine);
+            if (!match.Success)
+            {
+                return false;
+            }
+
+            var text = match.Groups["text"].ToString().Trim();
+            if (!string.IsNullOrEmpty(text))
+            {
+                SoundController.Instance.PlaySub(text);
             }
 
             return true;

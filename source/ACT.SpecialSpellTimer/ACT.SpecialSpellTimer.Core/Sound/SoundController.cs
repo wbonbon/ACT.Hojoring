@@ -181,6 +181,62 @@ namespace ACT.SpecialSpellTimer.Sound
         }
 
         /// <summary>
+        /// サブ再生デバイスで再生する
+        /// </summary>
+        /// <param name="source">再生する対象</param>
+        /// <param name="isSync">同期再生する？</param>
+        /// <param name="volume">再生ボリューム</param>
+        public void PlaySub(
+            string source,
+            bool isSync = false,
+            float? volume = null)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(source))
+                {
+                    return;
+                }
+
+                // wav？
+                if (source.EndsWith(".wav", StringComparison.OrdinalIgnoreCase) ||
+                    source.EndsWith(".wave", StringComparison.OrdinalIgnoreCase) ||
+                    source.EndsWith(".mp3", StringComparison.OrdinalIgnoreCase))
+                {
+                    // ファイルが存在する？
+                    if (File.Exists(source))
+                    {
+                        if (PlayBridge.Instance.IsAvailable)
+                        {
+                            PlayBridge.Instance.PlaySub(source, isSync, volume);
+                        }
+                        else
+                        {
+                            ActGlobals.oFormActMain.PlaySound(source);
+                        }
+                    }
+                }
+                else
+                {
+                    source = TTSDictionary.Instance.ReplaceWordsTTS(source);
+
+                    if (PlayBridge.Instance.IsAvailable)
+                    {
+                        PlayBridge.Instance.PlaySub(source, isSync, volume);
+                    }
+                    else
+                    {
+                        ActGlobals.oFormActMain.TTS(source);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Write("Play sound sub error.", ex);
+            }
+        }
+
+        /// <summary>
         /// Waveファイル
         /// </summary>
         public class WaveFile
