@@ -83,6 +83,7 @@
       System.Text.Encoding.CodePages
       System.Threading.Tasks.Extensions
       FontAwesome.WPF
+      System.Text.Encodings.Web
     </IncludeAssemblies>
   </Costura>
 </Weavers>

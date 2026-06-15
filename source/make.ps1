@@ -1,4 +1,4 @@
-﻿# 現在のディレクトリを取得する (PS7+ compliant)
+# 現在のディレクトリを取得する (PS7+ compliant)
 $cd = $PSScriptRoot
 Set-Location $cd
 
@@ -175,7 +175,7 @@ if (Test-Path .\ACT.Hojoring\bin\x64\Release) {
         "SixLabors.Fonts.dll", "SixLabors.ImageSharp.dll",
         "NPOI.Core.dll", "NPOI.OOXML.dll", "NPOI.OpenXml4Net.dll", "NPOI.OpenXmlFormats.dll",
         "ICSharpCode.SharpZipLib.dll", "Enums.NET.dll", "BouncyCastle.Cryptography.dll", "MathNet.Numerics.dll",
-        "AvalonEdit.dll", "Markdig.Signed.dll", "Hjson.dll",
+        "ICSharpCode.AvalonEdit.dll", "Markdig.Signed.dll", "Hjson.dll",
 
         # ACT.TTSYukkuri 埋め込み
         "RucheHome.Voiceroid.dll", "RucheHomeLib.dll", "VoiceTextWebAPI.Client.dll",
