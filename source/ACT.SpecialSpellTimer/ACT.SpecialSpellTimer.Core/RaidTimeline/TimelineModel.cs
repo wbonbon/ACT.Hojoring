@@ -98,17 +98,42 @@ namespace ACT.SpecialSpellTimer.RaidTimeline
                 typeof(Advanced_Combat_Tracker.ActGlobals).Assembly,
                 typeof(RazorLightEngine).Assembly,
                 Assembly.Load("netstandard"),
-                Assembly.Load("Microsoft.CSharp")
+                Assembly.Load("Microsoft.CSharp"),
+                
+                // Add compiler/Razor assemblies to manually reference them
+                Assembly.Load("Microsoft.AspNetCore.Razor.Runtime"),
+                Assembly.Load("Microsoft.AspNetCore.Razor"),
+                Assembly.Load("Microsoft.AspNetCore.Html.Abstractions"),
+                Assembly.Load("Microsoft.AspNetCore.Razor.Language"),
+                Assembly.Load("Microsoft.AspNetCore.Mvc.Razor.Extensions"),
+                Assembly.Load("Microsoft.CodeAnalysis.Razor"),
+                Assembly.Load("Microsoft.CodeAnalysis"),
+                Assembly.Load("Microsoft.CodeAnalysis.CSharp"),
+                Assembly.Load("System.Text.Encodings.Web")
             };
 
+            var binDir = Path.GetDirectoryName(typeof(TimelineModel).Assembly.Location);
             var metadataReferences = new List<MetadataReference>();
             foreach (var asm in assemblies)
             {
                 try
                 {
-                    if (asm != null && !string.IsNullOrWhiteSpace(asm.Location))
+                    if (asm != null)
                     {
-                        metadataReferences.Add(MetadataReference.CreateFromFile(asm.Location));
+                        if (!string.IsNullOrWhiteSpace(asm.Location))
+                        {
+                            metadataReferences.Add(MetadataReference.CreateFromFile(asm.Location));
+                        }
+                        else
+                        {
+                            // Try to find the physical file in the plugin's bin directory
+                            var name = asm.GetName().Name;
+                            var path = Path.Combine(binDir, name + ".dll");
+                            if (File.Exists(path))
+                            {
+                                metadataReferences.Add(MetadataReference.CreateFromFile(path));
+                            }
+                        }
                     }
                 }
                 catch
