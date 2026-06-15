@@ -82,6 +82,7 @@
       System.Reflection.Metadata
       System.Text.Encoding.CodePages
       System.Threading.Tasks.Extensions
+      FontAwesome.WPF
     </IncludeAssemblies>
   </Costura>
 </Weavers>

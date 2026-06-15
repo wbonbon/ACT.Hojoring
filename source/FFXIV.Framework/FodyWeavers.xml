@@ -23,6 +23,7 @@
       NAudio.Wasapi
       NAudio.WinMM
       Octokit
+      FontAwesome.WPF
     </IncludeAssemblies>
   </Costura>
 </Weavers>

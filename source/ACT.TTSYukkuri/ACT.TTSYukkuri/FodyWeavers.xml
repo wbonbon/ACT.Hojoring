@@ -21,6 +21,7 @@
       Grpc.Net.Client
       Grpc.Net.Common
       Microsoft.Bcl.AsyncInterfaces
+      FontAwesome.WPF
     </IncludeAssemblies>
     <UnmanagedWinX86Assemblies>
       AqKanji2Koe
