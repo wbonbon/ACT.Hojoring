@@ -1,4 +1,4 @@
-# 現在のディレクトリを取得する (PS7+ compliant)
+﻿# 現在のディレクトリを取得する (PS7+ compliant)
 $cd = $PSScriptRoot
 Set-Location $cd
 
