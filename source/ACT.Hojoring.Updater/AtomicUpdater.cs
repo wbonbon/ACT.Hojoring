@@ -229,27 +229,6 @@ namespace ACT.Hojoring
                     sw.WriteLine("echo ACTの終了を待機しています（3秒）...");
                     sw.WriteLine("timeout /t 3 /nobreak > nul");
 
-                    // 不要となったDLL（保留削除）のクリーンアップを追加
-                    try
-                    {
-                        var pendingDeletes = Directory.GetFiles(targetDir, "*.pending_delete", SearchOption.AllDirectories);
-                        if (pendingDeletes.Length > 0)
-                        {
-                            sw.WriteLine("echo 不要なアセンブリをクリーンアップしています...");
-                            foreach (var pdFile in pendingDeletes)
-                            {
-                                string targetPath = pdFile.Substring(0, pdFile.Length - ".pending_delete".Length);
-                                string fileName = Path.GetFileName(targetPath);
-
-                                sw.WriteLine($"echo クリーンアップ中: {fileName}");
-                                sw.WriteLine($"if exist \"{targetPath}\" attrib -r \"{targetPath}\" > nul");
-                                sw.WriteLine($"del /f /q \"{targetPath}\" > nul 2>&1");
-                                sw.WriteLine($"del /f /q \"{pdFile}\" > nul 2>&1");
-                            }
-                        }
-                    }
-                    catch { }
-
                     foreach (var newFile in newFiles)
                     {
                         string targetPath = newFile.Substring(0, newFile.Length - NewFileSuffix.Length);
@@ -272,6 +251,27 @@ namespace ACT.Hojoring
                         sw.WriteLine($"  echo %date% %time% [INFO ] [Batch] Successfully replaced {fileName}. >> \"{logFile}\"");
                         sw.WriteLine($")");
                     }
+
+                    // 不要となったDLL（保留削除）のクリーンアップを更新（移動）処理の後に実行する
+                    try
+                    {
+                        var pendingDeletes = Directory.GetFiles(targetDir, "*.pending_delete", SearchOption.AllDirectories);
+                        if (pendingDeletes.Length > 0)
+                        {
+                            sw.WriteLine("echo 不要なアセンブリをクリーンアップしています...");
+                            foreach (var pdFile in pendingDeletes)
+                            {
+                                string targetPath = pdFile.Substring(0, pdFile.Length - ".pending_delete".Length);
+                                string fileName = Path.GetFileName(targetPath);
+
+                                sw.WriteLine($"echo クリーンアップ中: {fileName}");
+                                sw.WriteLine($"if exist \"{targetPath}\" attrib -r \"{targetPath}\" > nul");
+                                sw.WriteLine($"del /f /q \"{targetPath}\" > nul 2>&1");
+                                sw.WriteLine($"del /f /q \"{pdFile}\" > nul 2>&1");
+                            }
+                        }
+                    }
+                    catch { }
 
                     sw.WriteLine($"echo %date% %time% [INFO ] [Batch] External update session completed. >> \"{logFile}\"");
                     sw.WriteLine("echo すべての更新が完了しました。");
