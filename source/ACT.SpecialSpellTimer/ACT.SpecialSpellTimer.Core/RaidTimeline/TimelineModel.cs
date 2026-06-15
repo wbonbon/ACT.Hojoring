@@ -50,6 +50,28 @@ namespace ACT.SpecialSpellTimer.RaidTimeline
                 .UseProject(new TimelineRazorProject(TimelineRazorModel.Instance.TimelineDirectory))
                 .UseMemoryCachingProvider();
 
+            // Exclude dynamic or memory-loaded (e.g. Costura embedded) assemblies that lack a physical path
+            try
+            {
+                var toExclude = new List<string>();
+                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (asm.IsDynamic || string.IsNullOrWhiteSpace(asm.Location))
+                    {
+                        var name = asm.GetName().Name;
+                        if (!string.IsNullOrEmpty(name))
+                        {
+                            toExclude.Add(name);
+                        }
+                    }
+                }
+                builder.ExcludeAssemblies(toExclude.ToArray());
+            }
+            catch
+            {
+                // Ignore errors to guarantee plugin load
+            }
+
             // Add Namespaces
             builder.AddDefaultNamespaces(
                 "System.Runtime",
