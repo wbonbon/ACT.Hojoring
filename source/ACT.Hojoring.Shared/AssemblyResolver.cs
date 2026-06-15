@@ -23,7 +23,8 @@ namespace ACT.Hojoring.Shared
                 {
                     isConflictChecked = true;
                     // 起動をブロックしないよう非同期でチェックを実行
-                    System.Threading.Tasks.Task.Run(() => CheckConflicts(directoryResolver?.Invoke()));
+                    // 競合検出が強すぎて不要な警告が出るため一時的に呼び出しを無効化
+                    // System.Threading.Tasks.Task.Run(() => CheckConflicts(directoryResolver?.Invoke()));
                 }
             }
         }
