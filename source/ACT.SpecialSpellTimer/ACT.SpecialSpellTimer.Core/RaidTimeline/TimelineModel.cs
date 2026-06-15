@@ -65,18 +65,37 @@ namespace ACT.SpecialSpellTimer.RaidTimeline
             // Add References
             // Add Assemblies containing types used in Razor templates
             // RazorLight requires MetadataReference, not Assembly
-            builder.AddMetadataReferences(
-                MetadataReference.CreateFromFile(typeof(TimelineModel).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(TimelineRazorModel).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(FFXIV.Framework.Common.WPFHelper).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Linq.Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Text.RegularExpressions.Regex).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(System.Xml.XmlDocument).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Advanced_Combat_Tracker.ActGlobals).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(RazorLightEngine).Assembly.Location),
-                MetadataReference.CreateFromFile(Assembly.Load("netstandard").Location),
-                MetadataReference.CreateFromFile(Assembly.Load("Microsoft.CSharp").Location)
-            );
+            var assemblies = new[]
+            {
+                typeof(TimelineModel).Assembly,
+                typeof(TimelineRazorModel).Assembly,
+                typeof(FFXIV.Framework.Common.WPFHelper).Assembly,
+                typeof(System.Linq.Enumerable).Assembly,
+                typeof(System.Text.RegularExpressions.Regex).Assembly,
+                typeof(System.Xml.XmlDocument).Assembly,
+                typeof(Advanced_Combat_Tracker.ActGlobals).Assembly,
+                typeof(RazorLightEngine).Assembly,
+                Assembly.Load("netstandard"),
+                Assembly.Load("Microsoft.CSharp")
+            };
+
+            var metadataReferences = new List<MetadataReference>();
+            foreach (var asm in assemblies)
+            {
+                try
+                {
+                    if (asm != null && !string.IsNullOrWhiteSpace(asm.Location))
+                    {
+                        metadataReferences.Add(MetadataReference.CreateFromFile(asm.Location));
+                    }
+                }
+                catch
+                {
+                    // Ignore
+                }
+            }
+
+            builder.AddMetadataReferences(metadataReferences.ToArray());
 
             // Inject NullHtmlEncoder to disable HTML encoding
             InjectNullHtmlEncoder(builder);
