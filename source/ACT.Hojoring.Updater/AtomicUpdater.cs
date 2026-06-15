@@ -92,59 +92,7 @@ namespace ACT.Hojoring
         public const string OldFileSuffix = ".old";
         private static bool executed = false;
 
-        private static readonly string[] DeprecatedDlls = new[]
-        {
-            // FFXIV.Framework
-            "Sharlayan.dll",
-            "Newtonsoft.Json.dll", "Newtonsoft.Json.Bson.dll",
-            "System.Reactive.dll", "System.Reactive.Linq.dll",
-            "Microsoft.CodeAnalysis.dll", "Microsoft.CodeAnalysis.CSharp.dll", "Microsoft.CodeAnalysis.CSharp.Scripting.dll", "Microsoft.CodeAnalysis.Scripting.dll",
-            "System.Runtime.CompilerServices.Unsafe.dll", "System.Memory.dll", "System.Buffers.dll", "System.Numerics.Vectors.dll",
-            "System.Collections.Immutable.dll", "System.Threading.Tasks.Extensions.dll", "System.ValueTuple.dll", "System.Reflection.Metadata.dll",
-            "System.Text.Encoding.CodePages.dll", "System.Text.Encodings.Web.dll", "Microsoft.Bcl.AsyncInterfaces.dll",
-            "websocket-sharp.dll", "WindowsInput.dll",
-            "Grpc.Core.dll", "Grpc.Core.Api.dll", "Grpc.Net.Client.dll", "Grpc.Net.Common.dll",
-            "TagLibSharp.dll", "Prism.dll", "Prism.Wpf.dll", "CommonServiceLocator.dll",
 
-            // ACT.SpecialSpellTimer
-            "RazorLight.dll",
-            "Microsoft.AspNetCore.Html.Abstractions.dll", "Microsoft.AspNetCore.Http.Abstractions.dll", "Microsoft.AspNetCore.Http.Features.dll",
-            "Microsoft.AspNetCore.Mvc.Razor.Extensions.dll", "Microsoft.AspNetCore.Razor.dll", "Microsoft.AspNetCore.Razor.Language.dll", "Microsoft.AspNetCore.Razor.Runtime.dll",
-            "Microsoft.CodeAnalysis.Razor.dll",
-            "Microsoft.Extensions.Caching.Abstractions.dll", "Microsoft.Extensions.Caching.Memory.dll", "Microsoft.Extensions.Configuration.Abstractions.dll",
-            "Microsoft.Extensions.DependencyInjection.dll", "Microsoft.Extensions.DependencyInjection.Abstractions.dll", "Microsoft.Extensions.FileProviders.Abstractions.dll",
-            "Microsoft.Extensions.FileProviders.Physical.dll", "Microsoft.Extensions.FileSystemGlobbing.dll", "Microsoft.Extensions.Hosting.Abstractions.dll",
-            "Microsoft.Extensions.Logging.Abstractions.dll", "Microsoft.Extensions.Options.dll", "Microsoft.Extensions.Primitives.dll",
-            "Microsoft.IO.RecyclableMemoryStream.dll",
-            "SixLabors.Fonts.dll", "SixLabors.ImageSharp.dll",
-            "NPOI.Core.dll", "NPOI.OOXML.dll", "NPOI.OpenXml4Net.dll", "NPOI.OpenXmlFormats.dll",
-            "ICSharpCode.SharpZipLib.dll", "Enums.NET.dll", "BouncyCastle.Cryptography.dll", "MathNet.Numerics.dll",
-            "AvalonEdit.dll", "Markdig.Signed.dll", "Hjson.dll",
-
-            // ACT.TTSYukkuri
-            "RucheHome.Voiceroid.dll", "RucheHomeLib.dll", "VoiceTextWebAPI.Client.dll",
-
-            // ACT.UltraScouter
-            "Extended.Wpf.Toolkit.dll", "Xceed.Wpf.Toolkit.dll",
-            "FontAwesome.WPF.dll", "NLog.dll",
-            "MahApps.Metro.IconPacks.dll", "MahApps.Metro.IconPacks.Core.dll",
-            "MahApps.Metro.IconPacks.Material.dll", "MahApps.Metro.IconPacks.MaterialLight.dll",
-            "MahApps.Metro.IconPacks.BootstrapIcons.dll", "MahApps.Metro.IconPacks.BoxIcons.dll",
-            "MahApps.Metro.IconPacks.Codicons.dll", "MahApps.Metro.IconPacks.Coolicons.dll",
-            "MahApps.Metro.IconPacks.Entypo.dll", "MahApps.Metro.IconPacks.EvaIcons.dll",
-            "MahApps.Metro.IconPacks.FeatherIcons.dll", "MahApps.Metro.IconPacks.FileIcons.dll",
-            "MahApps.Metro.IconPacks.Fontaudio.dll", "MahApps.Metro.IconPacks.FontAwesome.dll",
-            "MahApps.Metro.IconPacks.Fontisto.dll", "MahApps.Metro.IconPacks.ForkAwesome.dll",
-            "MahApps.Metro.IconPacks.Ionicons.dll", "MahApps.Metro.IconPacks.JamIcons.dll",
-            "MahApps.Metro.IconPacks.MaterialDesign.dll", "MahApps.Metro.IconPacks.MaterialLight.dll",
-            "MahApps.Metro.IconPacks.Microns.dll", "MahApps.Metro.IconPacks.Modern.dll",
-            "MahApps.Metro.IconPacks.Octicons.dll", "MahApps.Metro.IconPacks.PicolIcons.dll",
-            "MahApps.Metro.IconPacks.PixelartIcons.dll", "MahApps.Metro.IconPacks.RadixIcons.dll",
-            "MahApps.Metro.IconPacks.RemixIcon.dll", "MahApps.Metro.IconPacks.RPGAwesome.dll",
-            "MahApps.Metro.IconPacks.SimpleIcons.dll", "MahApps.Metro.IconPacks.Typicons.dll",
-            "MahApps.Metro.IconPacks.Unicons.dll", "MahApps.Metro.IconPacks.VaadinIcons.dll",
-            "MahApps.Metro.IconPacks.WeatherIcons.dll", "MahApps.Metro.IconPacks.Zondicons.dll"
-        };
 
         /// <summary>
         /// 現在のプラグインディレクトリから .new ファイルを探し、可能な限り即時置換します。
@@ -162,7 +110,8 @@ namespace ACT.Hojoring
                 DeleteOldFiles(targetDir);
 
                 var newFiles = Directory.GetFiles(targetDir, "*" + NewFileSuffix, SearchOption.AllDirectories);
-                if (newFiles.Length == 0) return;
+                var pendingDeletes = Directory.GetFiles(targetDir, "*.pending_delete", SearchOption.AllDirectories);
+                if (newFiles.Length == 0 && pendingDeletes.Length == 0) return;
 
                 Log($"[AtomicUpdater] .new files detected. Starting replacement in {targetDir}");
 
@@ -197,7 +146,7 @@ namespace ACT.Hojoring
                     }
                 }
 
-                if (lockedFiles.Count > 0)
+                if (lockedFiles.Count > 0 || pendingDeletes.Length > 0)
                 {
                     ScheduleExternalUpdate(lockedFiles);
                 }
@@ -221,9 +170,10 @@ namespace ACT.Hojoring
             if (string.IsNullOrEmpty(targetDir)) return;
 
             var newFiles = Directory.GetFiles(targetDir, "*" + NewFileSuffix, SearchOption.AllDirectories);
-            if (newFiles.Length == 0) return;
+            var pendingDeletes = Directory.GetFiles(targetDir, "*.pending_delete", SearchOption.AllDirectories);
+            if (newFiles.Length == 0 && pendingDeletes.Length == 0) return;
 
-            Log($"[AtomicUpdater] External update requested. {newFiles.Length} files scheduled.");
+            Log($"[AtomicUpdater] External update requested. {newFiles.Length} files scheduled, {pendingDeletes.Length} deletes scheduled.");
             ScheduleExternalUpdate(newFiles);
         }
 
@@ -279,18 +229,26 @@ namespace ACT.Hojoring
                     sw.WriteLine("echo ACTの終了を待機しています（3秒）...");
                     sw.WriteLine("timeout /t 3 /nobreak > nul");
 
-                    // 不要となったDLLのクリーンアップを追加
-                    sw.WriteLine("echo 不要なアセンブリをクリーンアップしています...");
-                    foreach (var dll in DeprecatedDlls)
+                    // 不要となったDLL（保留削除）のクリーンアップを追加
+                    try
                     {
-                        string path1 = Path.Combine(targetDir, dll);
-                        string path2 = Path.Combine(targetDir, "bin", dll);
+                        var pendingDeletes = Directory.GetFiles(targetDir, "*.pending_delete", SearchOption.AllDirectories);
+                        if (pendingDeletes.Length > 0)
+                        {
+                            sw.WriteLine("echo 不要なアセンブリをクリーンアップしています...");
+                            foreach (var pdFile in pendingDeletes)
+                            {
+                                string targetPath = pdFile.Substring(0, pdFile.Length - ".pending_delete".Length);
+                                string fileName = Path.GetFileName(targetPath);
 
-                        sw.WriteLine($"if exist \"{path1}\" attrib -r \"{path1}\" > nul");
-                        sw.WriteLine($"if exist \"{path1}\" del /f /q \"{path1}\" > nul 2>&1");
-                        sw.WriteLine($"if exist \"{path2}\" attrib -r \"{path2}\" > nul");
-                        sw.WriteLine($"if exist \"{path2}\" del /f /q \"{path2}\" > nul 2>&1");
+                                sw.WriteLine($"echo クリーンアップ中: {fileName}");
+                                sw.WriteLine($"if exist \"{targetPath}\" attrib -r \"{targetPath}\" > nul");
+                                sw.WriteLine($"del /f /q \"{targetPath}\" > nul 2>&1");
+                                sw.WriteLine($"del /f /q \"{pdFile}\" > nul 2>&1");
+                            }
+                        }
                     }
+                    catch { }
 
                     foreach (var newFile in newFiles)
                     {
