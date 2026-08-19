@@ -173,7 +173,12 @@ namespace ACT.TTSYukkuri.Config.ViewModels
                     x)
                 {
                     this.Voices.Add(
-                        new PollyConfigs.PollyVoice { Name = $"{v.Id.Value} ({v.LanguageCode}, {v.Gender})", Value = v.Id });
+                        new PollyConfigs.PollyVoice 
+                        { 
+                            Name = $"{v.Id.Value} ({v.LanguageCode}, {v.Gender})", 
+                            Value = v.Id,
+                            SupportedEngines = v.SupportedEngines != null ? string.Join(",", v.SupportedEngines) : string.Empty
+                        });
                 }
             }
 

@@ -7,6 +7,7 @@ using Amazon.Runtime.CredentialManagement;
 using FFXIV.Framework.Bridge;
 using System;
 using System.IO;
+using System.Linq;
 
 namespace ACT.TTSYukkuri.Polly
 {
@@ -136,14 +137,54 @@ namespace ACT.TTSYukkuri.Polly
                 awsCredentials,
                 endpoint))
             {
-                var ssml =
-                    $@"<speak><prosody volume=""{config.Volume.ToXML()}"" rate=""{config.Rate.ToXML()}"" pitch=""{config.Pitch.ToXML()}"">{textToSpeak}</prosody></speak>";
-
                 var req = new SynthesizeSpeechRequest();
-                req.TextType = TextType.Ssml;
-                req.Text = ssml;
                 req.OutputFormat = OutputFormat.Mp3;
                 req.VoiceId = config.Voice;
+
+                var selectedVoice = Settings.Default.PollyVoices.FirstOrDefault(x => x.Value == config.Voice);
+                if (selectedVoice != null && !string.IsNullOrEmpty(selectedVoice.SupportedEngines))
+                {
+                    if (selectedVoice.SupportedEngines.Contains("generative"))
+                    {
+                        req.Engine = Engine.FindValue("generative");
+                    }
+                    else if (selectedVoice.SupportedEngines.Contains("long-form"))
+                    {
+                        req.Engine = Engine.FindValue("long-form");
+                    }
+                    else if (selectedVoice.SupportedEngines.Contains("neural"))
+                    {
+                        req.Engine = Engine.Neural;
+                    }
+                    else
+                    {
+                        req.Engine = Engine.Standard;
+                    }
+                }
+                else
+                {
+                    req.Engine = Engine.Standard;
+                }
+
+                // Amazon Polly Engine limitations for SSML:
+                var ssml = string.Empty;
+                if (req.Engine == Engine.FindValue("generative"))
+                {
+                    // Generative does not support <prosody> tag
+                    ssml = $@"<speak>{textToSpeak}</speak>";
+                }
+                else if (req.Engine == Engine.Neural || req.Engine == Engine.FindValue("long-form"))
+                {
+                    // Neural and LongForm do not support 'pitch' attribute in <prosody>
+                    ssml = $@"<speak><prosody volume=""{config.Volume.ToXML()}"" rate=""{config.Rate.ToXML()}"">{textToSpeak}</prosody></speak>";
+                }
+                else
+                {
+                    ssml = $@"<speak><prosody volume=""{config.Volume.ToXML()}"" rate=""{config.Rate.ToXML()}"" pitch=""{config.Pitch.ToXML()}"">{textToSpeak}</prosody></speak>";
+                }
+
+                req.TextType = TextType.Ssml;
+                req.Text = ssml;
 
                 var res = pc.SynthesizeSpeech(req);
 
