@@ -100,6 +100,9 @@ namespace ACT.TTSYukkuri.Config
 
             [XmlAttribute(AttributeName = "Value")]
             public string Value { get; set; }
+
+            [XmlAttribute(AttributeName = "SupportedEngines")]
+            public string SupportedEngines { get; set; }
         }
     }
 }
